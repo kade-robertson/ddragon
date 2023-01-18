@@ -10,6 +10,7 @@ anyhow = "1.0.68"
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 ureq = { version = "2.6.2", features = ["json"] }
+url = "2.3.1"
 
 [dev-dependencies]
 mockito = "0.31.1"

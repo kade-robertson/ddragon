@@ -1,18 +1,22 @@
 use anyhow::Context;
+use serde::de::DeserializeOwned;
+use url::Url;
 
 #[cfg(test)]
 use mockito;
 
+use crate::models::champions::Champions;
+
 pub struct DDragonClient {
-    request_agent: ureq::Agent,
-    version: String,
-    base_url: String,
+    agent: ureq::Agent,
+    pub version: String,
+    base_url: Url,
 }
 
 impl DDragonClient {
-    pub fn with_agent(agent: ureq::Agent, base_url: String) -> anyhow::Result<Self> {
+    pub fn with_agent(agent: ureq::Agent, base_url: Url) -> anyhow::Result<Self> {
         let version_list = agent
-            .get(&format!("{base_url}/api/versions.json"))
+            .get(base_url.join("/api/versions.json")?.as_str())
             .call()?
             .into_json::<Vec<String>>()?;
 
@@ -21,7 +25,7 @@ impl DDragonClient {
             .context("Unable to parse an API version.")?;
 
         Ok(DDragonClient {
-            request_agent: agent,
+            agent,
             version: latest_version.to_owned(),
             base_url,
         })
@@ -31,12 +35,29 @@ impl DDragonClient {
         let agent = ureq::Agent::new();
 
         #[cfg(not(test))]
-        let base_url = "https://ddragon.leagueoflegends.com".to_owned();
+        let base_url = "https://ddragon.leagueoflegends.com";
 
         #[cfg(test)]
         let base_url = mockito::server_url();
 
-        Self::with_agent(agent, base_url)
+        Self::with_agent(agent, Url::parse(&base_url)?)
+    }
+
+    fn get_data_url(&self) -> Result<Url, url::ParseError> {
+        self.base_url
+            .join(&format!("/cdn/{}/data/en_US/", &self.version))
+    }
+
+    fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> anyhow::Result<T> {
+        self.agent
+            .get(self.get_data_url()?.join(endpoint)?.as_str())
+            .call()?
+            .into_json::<T>()
+            .map_err(anyhow::Error::msg)
+    }
+
+    pub fn champions(&self) -> anyhow::Result<Champions> {
+        self.get_data::<Champions>("./champion.json")
     }
 }
 
@@ -44,6 +65,16 @@ impl DDragonClient {
 mod test {
     use super::*;
     use mockito::mock;
+
+    impl Default for DDragonClient {
+        fn default() -> Self {
+            Self {
+                agent: ureq::Agent::new(),
+                version: "0.0.0".to_owned(),
+                base_url: Url::parse(&mockito::server_url()).unwrap(),
+            }
+        }
+    }
 
     mod create {
         use super::*;
@@ -100,6 +131,54 @@ mod test {
                 .create();
 
             assert!(DDragonClient::new().is_err());
+        }
+    }
+
+    mod requests {
+        use super::*;
+
+        #[test]
+        fn get_data_url_constructs_expected_baseurl() {
+            let client = DDragonClient::default();
+            assert_eq!(
+                client.get_data_url().unwrap().as_str(),
+                format!("{}/cdn/0.0.0/data/en_US/", mockito::server_url())
+            );
+        }
+
+        #[test]
+        fn get_data_err_if_server_unavailable() {
+            let client = DDragonClient::default();
+            assert!(client
+                .get_data::<serde_json::Value>("/fake-endpoint")
+                .is_err());
+        }
+
+        #[test]
+        fn get_data_err_if_data_not_deserializable() {
+            let _mock = mock("GET", "/cdn/0.0.0/data/en_US/data.json")
+                .with_status(200)
+                .with_header("Content-Type", "application/json")
+                .with_body(r#"no chance to deserialize this"#)
+                .create();
+
+            let client = DDragonClient::default();
+            assert!(client.get_data::<serde_json::Value>("./data.json").is_err());
+        }
+
+        #[test]
+        fn get_data_ok_deserializes_to_type() {
+            let _mock = mock("GET", "/cdn/0.0.0/data/en_US/data.json")
+                .with_status(200)
+                .with_header("Content-Type", "application/json")
+                .with_body(r#"["value"]"#)
+                .create();
+
+            let client = DDragonClient::default();
+            assert_eq!(
+                client.get_data::<Vec<String>>("./data.json").unwrap(),
+                vec!["value".to_owned()]
+            );
         }
     }
 }
