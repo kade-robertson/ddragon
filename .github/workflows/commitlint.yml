@@ -1,0 +1,21 @@
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, edited]
+
+name: commitlint
+jobs:
+  commitlint:
+    name: conventional commit linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Download conventional_commits_linter
+        run: wget -q -O tmp.zip "https://gitlab.com/DeveloperC/conventional_commits_linter/-/jobs/artifacts/bin-0.12.1/download?job=release-binary-compiling-x86_64-linux-musl" && unzip tmp.zip && rm tmp.zip
+
+      - name: Lint commits
+        run: ./conventional_commits_linter --from-reference "origin/$GITHUB_BASE_REF"
