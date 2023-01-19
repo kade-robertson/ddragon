@@ -5,7 +5,7 @@ use url::Url;
 #[cfg(test)]
 use mockito;
 
-use crate::models::champions::Champions;
+use crate::models::{champions::Champions, items::Items};
 
 pub struct DDragonClient {
     agent: ureq::Agent,
@@ -58,6 +58,10 @@ impl DDragonClient {
 
     pub fn champions(&self) -> anyhow::Result<Champions> {
         self.get_data::<Champions>("./champion.json")
+    }
+
+    pub fn items(&self) -> anyhow::Result<Items> {
+        self.get_data::<Items>("./item.json")
     }
 }
 

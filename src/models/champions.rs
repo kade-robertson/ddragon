@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use super::shared::Image;
+
 #[derive(Serialize, Deserialize)]
 pub struct Champions {
     pub format: String,
@@ -17,21 +19,10 @@ pub struct ChampionData {
     pub title: String,
     pub blurb: String,
     pub info: Info,
-    pub image: Image,
+    pub image: Image<ChampionSprite>,
     pub tags: Vec<Tag>,
     pub partype: String,
     pub stats: HashMap<String, f64>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Image {
-    pub full: String,
-    pub sprite: Sprite,
-    pub group: String,
-    pub x: i64,
-    pub y: i64,
-    pub w: i64,
-    pub h: i64,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -43,7 +34,7 @@ pub struct Info {
 }
 
 #[derive(Serialize, Deserialize)]
-pub enum Sprite {
+pub enum ChampionSprite {
     #[serde(rename = "champion0.png")]
     Champion0,
     #[serde(rename = "champion1.png")]
