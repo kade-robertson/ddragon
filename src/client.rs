@@ -5,7 +5,7 @@ use url::Url;
 #[cfg(test)]
 use mockito;
 
-use crate::models::{Challenges, Champions, Items, Runes, Translations};
+use crate::models::{Challenges, Champions, Items, Runes, SummonerSpells, Translations};
 
 #[derive(Error, Debug)]
 pub enum DDragonClientError {
@@ -82,6 +82,10 @@ impl DDragonClient {
 
     pub fn runes(&self) -> Result<Runes, DDragonClientError> {
         self.get_data::<Runes>("./item.json")
+    }
+
+    pub fn summoner_spells(&self) -> Result<SummonerSpells, DDragonClientError> {
+        self.get_data::<SummonerSpells>("./language.json")
     }
 
     pub fn translations(&self) -> Result<Translations, DDragonClientError> {
