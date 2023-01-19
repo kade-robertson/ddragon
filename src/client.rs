@@ -15,6 +15,8 @@ pub enum DDragonClientError {
     Request(#[from] ureq::Error),
     #[error("Could not parse JSON data.")]
     Parse(#[from] std::io::Error),
+    #[error("Could not parse JSON data.")]
+    JSONParse(#[from] serde_json::Error),
     #[error("Could not find the latest API version.")]
     NoLatestVersion,
 }
@@ -23,10 +25,15 @@ pub struct DDragonClient {
     agent: ureq::Agent,
     pub version: String,
     base_url: Url,
+    cache_dir: Option<String>,
 }
 
 impl DDragonClient {
-    pub fn with_agent(agent: ureq::Agent, base_url: Url) -> Result<Self, DDragonClientError> {
+    fn create(
+        agent: ureq::Agent,
+        cache_dir: Option<String>,
+        base_url: Url,
+    ) -> Result<Self, DDragonClientError> {
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
             .call()?
@@ -40,19 +47,31 @@ impl DDragonClient {
             agent,
             version: latest_version.to_owned(),
             base_url,
+            cache_dir,
         })
     }
 
-    pub fn new() -> Result<Self, DDragonClientError> {
-        let agent = ureq::Agent::new();
-
+    pub fn with_agent(
+        agent: ureq::Agent,
+        cache_dir: Option<String>,
+    ) -> Result<Self, DDragonClientError> {
         #[cfg(not(test))]
         let base_url = "https://ddragon.leagueoflegends.com";
 
         #[cfg(test)]
         let base_url = mockito::server_url();
 
-        Self::with_agent(agent, Url::parse(&base_url)?)
+        Self::create(agent, cache_dir, Url::parse(&base_url)?)
+    }
+
+    pub fn with_cache(cache_dir: &str) -> Result<Self, DDragonClientError> {
+        let agent = ureq::Agent::new();
+        Self::with_agent(agent, Some(cache_dir.to_owned()))
+    }
+
+    pub fn new() -> Result<Self, DDragonClientError> {
+        let agent = ureq::Agent::new();
+        Self::with_agent(agent, None)
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
@@ -61,11 +80,26 @@ impl DDragonClient {
     }
 
     fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, DDragonClientError> {
-        self.agent
-            .get(self.get_data_url()?.join(endpoint)?.as_str())
-            .call()?
-            .into_json::<T>()
-            .map_err(DDragonClientError::Parse)
+        let joined_url = self.get_data_url()?.join(endpoint)?;
+        let request_url = joined_url.as_str();
+
+        if let Some(dir) = &self.cache_dir {
+            if let Ok(data) = cacache::read_sync(dir, request_url) {
+                if let Ok(parsed) = serde_json::from_slice(&data) {
+                    return Ok(parsed);
+                }
+            }
+        }
+
+        let response = self.agent.get(request_url).call()?;
+        let response_str = response.into_string()?;
+        let response_json = serde_json::from_str(&response_str)?;
+
+        if let Some(dir) = &self.cache_dir {
+            let _ = cacache::write_sync(dir, request_url, response_str);
+        }
+
+        Ok(response_json)
     }
 
     pub fn challenges(&self) -> Result<Challenges, DDragonClientError> {
@@ -81,11 +115,11 @@ impl DDragonClient {
     }
 
     pub fn runes(&self) -> Result<Runes, DDragonClientError> {
-        self.get_data::<Runes>("./item.json")
+        self.get_data::<Runes>("./runesReforged.json")
     }
 
     pub fn summoner_spells(&self) -> Result<SummonerSpells, DDragonClientError> {
-        self.get_data::<SummonerSpells>("./language.json")
+        self.get_data::<SummonerSpells>("./summoner.json")
     }
 
     pub fn translations(&self) -> Result<Translations, DDragonClientError> {
@@ -104,6 +138,7 @@ mod test {
                 agent: ureq::Agent::new(),
                 version: "0.0.0".to_owned(),
                 base_url: Url::parse(&mockito::server_url()).unwrap(),
+                cache_dir: None,
             }
         }
     }
