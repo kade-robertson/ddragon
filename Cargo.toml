@@ -6,7 +6,7 @@ license = "MIT"
 homepage = "https://github.com/uggo-lol/ddragon"
 repository = "https://github.com/uggo-lol/ddragon"
 readme = "./README.md"
-keywords = ["ddragon", "league-of-legends", "lol", "league", "of", "legends"]
+keywords = ["ddragon", "league-of-legends", "lol", "league", "legends"]
 categories = ["api-bindings"]
 
 
