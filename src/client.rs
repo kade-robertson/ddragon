@@ -1,11 +1,23 @@
-use anyhow::Context;
 use serde::de::DeserializeOwned;
+use thiserror::Error;
 use url::Url;
 
 #[cfg(test)]
 use mockito;
 
 use crate::models::{champions::Champions, items::Items, translations::Translations};
+
+#[derive(Error, Debug)]
+pub enum DDragonClientError {
+    #[error("Could not parse URL.")]
+    UrlParse(#[from] url::ParseError),
+    #[error("Could not complete request.")]
+    Request(#[from] ureq::Error),
+    #[error("Could not parse JSON data.")]
+    Parse(#[from] std::io::Error),
+    #[error("Could not find the latest API version.")]
+    NoLatestVersion,
+}
 
 pub struct DDragonClient {
     agent: ureq::Agent,
@@ -14,7 +26,7 @@ pub struct DDragonClient {
 }
 
 impl DDragonClient {
-    pub fn with_agent(agent: ureq::Agent, base_url: Url) -> anyhow::Result<Self> {
+    pub fn with_agent(agent: ureq::Agent, base_url: Url) -> Result<Self, DDragonClientError> {
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
             .call()?
@@ -22,7 +34,7 @@ impl DDragonClient {
 
         let latest_version = version_list
             .get(0)
-            .context("Unable to parse an API version.")?;
+            .ok_or(DDragonClientError::NoLatestVersion)?;
 
         Ok(DDragonClient {
             agent,
@@ -31,7 +43,7 @@ impl DDragonClient {
         })
     }
 
-    pub fn new() -> anyhow::Result<Self> {
+    pub fn new() -> Result<Self, DDragonClientError> {
         let agent = ureq::Agent::new();
 
         #[cfg(not(test))]
@@ -48,23 +60,23 @@ impl DDragonClient {
             .join(&format!("/cdn/{}/data/en_US/", &self.version))
     }
 
-    fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> anyhow::Result<T> {
+    fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, DDragonClientError> {
         self.agent
             .get(self.get_data_url()?.join(endpoint)?.as_str())
             .call()?
             .into_json::<T>()
-            .map_err(anyhow::Error::msg)
+            .map_err(DDragonClientError::Parse)
     }
 
-    pub fn champions(&self) -> anyhow::Result<Champions> {
+    pub fn champions(&self) -> Result<Champions, DDragonClientError> {
         self.get_data::<Champions>("./champion.json")
     }
 
-    pub fn items(&self) -> anyhow::Result<Items> {
+    pub fn items(&self) -> Result<Items, DDragonClientError> {
         self.get_data::<Items>("./item.json")
     }
 
-    pub fn translations(&self) -> anyhow::Result<Translations> {
+    pub fn translations(&self) -> Result<Translations, DDragonClientError> {
         self.get_data::<Translations>("./language.json")
     }
 }
