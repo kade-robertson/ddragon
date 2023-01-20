@@ -67,7 +67,7 @@ impl DDragonClient {
         Self::with_agent(agent)
     }
 
-    #[cfg(test)]
+    #[cfg(any(test, not(feature = "local-cache")))]
     fn new_no_cache() -> Result<Self, DDragonClientError> {
         let agent = ureq::Agent::new();
         Self::with_agent(agent)
