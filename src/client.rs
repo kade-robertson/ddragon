@@ -8,7 +8,7 @@ use mockito;
 #[cfg(feature = "local-cache")]
 use crate::cache_middleware::CacheMiddleware;
 
-use crate::models::{Challenges, Champions, Items, Runes, SummonerSpells, Translations};
+use crate::models::{Challenges, Champions, Items, Maps, Runes, SummonerSpells, Translations};
 
 #[derive(Error, Debug)]
 pub enum DDragonClientError {
@@ -105,6 +105,10 @@ impl DDragonClient {
 
     pub fn items(&self) -> Result<Items, DDragonClientError> {
         self.get_data::<Items>("./item.json")
+    }
+
+    pub fn maps(&self) -> Result<Maps, DDragonClientError> {
+        self.get_data::<Maps>("./map.json")
     }
 
     pub fn runes(&self) -> Result<Runes, DDragonClientError> {
