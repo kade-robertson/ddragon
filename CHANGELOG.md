@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/uggo-lol/ddragon/compare/v0.1.0...v0.2.0) (2023-01-20)
+
+
+### Features
+
+* derive clone and copy where possible ([#5](https://github.com/uggo-lol/ddragon/issues/5)) ([e95395e](https://github.com/uggo-lol/ddragon/commit/e95395e283f8d2f6b646513d2550b23a0710b678))
+
 ## 0.1.0 (2023-01-19)
 
 
