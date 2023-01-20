@@ -12,7 +12,7 @@ pub enum DDragonClientError {
     #[error("Could not parse URL.")]
     UrlParse(#[from] url::ParseError),
     #[error("Could not complete request.")]
-    Request(#[from] ureq::Error),
+    Request(#[from] Box<ureq::Error>),
     #[error("Could not parse JSON data.")]
     Parse(#[from] std::io::Error),
     #[error("Could not parse JSON data.")]
@@ -36,7 +36,8 @@ impl DDragonClient {
     ) -> Result<Self, DDragonClientError> {
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
-            .call()?
+            .call()
+            .map_err(Box::new)?
             .into_json::<Vec<String>>()?;
 
         let latest_version = version_list
@@ -91,7 +92,7 @@ impl DDragonClient {
             }
         }
 
-        let response = self.agent.get(request_url).call()?;
+        let response = self.agent.get(request_url).call().map_err(Box::new)?;
         let response_str = response.into_string()?;
         let response_json = serde_json::from_str(&response_str)?;
 
