@@ -14,6 +14,7 @@ fn health_check() {
     client.challenges().unwrap();
     client.champions().unwrap();
     client.items().unwrap();
+    client.maps().unwrap();
     client.runes().unwrap();
     client.summoner_spells().unwrap();
     client.translations().unwrap();
@@ -23,6 +24,7 @@ fn health_check() {
     client.challenges().unwrap();
     client.champions().unwrap();
     client.items().unwrap();
+    client.maps().unwrap();
     client.runes().unwrap();
     client.summoner_spells().unwrap();
     client.translations().unwrap();
