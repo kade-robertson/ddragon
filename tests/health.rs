@@ -8,7 +8,7 @@ fn health_check() {
     let _ = remove_dir_all(&tempdir);
 
     eprintln!("Using {} for cache.", tempdir.to_string_lossy());
-    let client = DDragonClient::with_cache(tempdir.as_os_str().to_str().unwrap()).unwrap();
+    let client = DDragonClient::new(tempdir.as_os_str().to_str().unwrap()).unwrap();
 
     let uncached_start = Instant::now();
     client.challenges().unwrap();

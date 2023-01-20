@@ -5,6 +5,9 @@ use url::Url;
 #[cfg(test)]
 use mockito;
 
+#[cfg(feature = "local-cache")]
+use crate::cache_middleware::CacheMiddleware;
+
 use crate::models::{Challenges, Champions, Items, Runes, SummonerSpells, Translations};
 
 #[derive(Error, Debug)]
@@ -25,15 +28,10 @@ pub struct DDragonClient {
     agent: ureq::Agent,
     pub version: String,
     base_url: Url,
-    cache_dir: Option<String>,
 }
 
 impl DDragonClient {
-    fn create(
-        agent: ureq::Agent,
-        cache_dir: Option<String>,
-        base_url: Url,
-    ) -> Result<Self, DDragonClientError> {
+    fn create(agent: ureq::Agent, base_url: Url) -> Result<Self, DDragonClientError> {
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
             .call()
@@ -48,31 +46,36 @@ impl DDragonClient {
             agent,
             version: latest_version.to_owned(),
             base_url,
-            cache_dir,
         })
     }
 
-    pub fn with_agent(
-        agent: ureq::Agent,
-        cache_dir: Option<String>,
-    ) -> Result<Self, DDragonClientError> {
+    pub fn with_agent(agent: ureq::Agent) -> Result<Self, DDragonClientError> {
         #[cfg(not(test))]
-        let base_url = "https://ddragon.leagueoflegends.com";
+        let base_url = "https://ddragon.leagueoflegends.com".to_owned();
 
         #[cfg(test)]
         let base_url = mockito::server_url();
 
-        Self::create(agent, cache_dir, Url::parse(&base_url)?)
+        Self::create(agent, Url::parse(&base_url)?)
     }
 
-    pub fn with_cache(cache_dir: &str) -> Result<Self, DDragonClientError> {
+    #[cfg(feature = "local-cache")]
+    pub fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
+        let agent = ureq::AgentBuilder::new()
+            .middleware(CacheMiddleware::new(cache_dir))
+            .build();
+        Self::with_agent(agent)
+    }
+
+    #[cfg(any(test, not(feature = "local-cache")))]
+    fn new_no_cache() -> Result<Self, DDragonClientError> {
         let agent = ureq::Agent::new();
-        Self::with_agent(agent, Some(cache_dir.to_owned()))
+        Self::with_agent(agent)
     }
 
+    #[cfg(not(feature = "local-cache"))]
     pub fn new() -> Result<Self, DDragonClientError> {
-        let agent = ureq::Agent::new();
-        Self::with_agent(agent, None)
+        Self::new_no_cache()
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
@@ -84,23 +87,12 @@ impl DDragonClient {
         let joined_url = self.get_data_url()?.join(endpoint)?;
         let request_url = joined_url.as_str();
 
-        if let Some(dir) = &self.cache_dir {
-            if let Ok(data) = cacache::read_sync(dir, request_url) {
-                if let Ok(parsed) = serde_json::from_slice(&data) {
-                    return Ok(parsed);
-                }
-            }
-        }
-
-        let response = self.agent.get(request_url).call().map_err(Box::new)?;
-        let response_str = response.into_string()?;
-        let response_json = serde_json::from_str(&response_str)?;
-
-        if let Some(dir) = &self.cache_dir {
-            let _ = cacache::write_sync(dir, request_url, response_str);
-        }
-
-        Ok(response_json)
+        self.agent
+            .get(request_url)
+            .call()
+            .map_err(Box::new)?
+            .into_json::<T>()
+            .map_err(|e| e.into())
     }
 
     pub fn challenges(&self) -> Result<Challenges, DDragonClientError> {
@@ -139,7 +131,6 @@ mod test {
                 agent: ureq::Agent::new(),
                 version: "0.0.0".to_owned(),
                 base_url: Url::parse(&mockito::server_url()).unwrap(),
-                cache_dir: None,
             }
         }
     }
@@ -155,7 +146,7 @@ mod test {
                 .with_body(r#"["0.0.0"]"#)
                 .create();
 
-            let maybe_client = DDragonClient::new();
+            let maybe_client = DDragonClient::new_no_cache();
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -169,7 +160,7 @@ mod test {
                 .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
                 .create();
 
-            let maybe_client = DDragonClient::new();
+            let maybe_client = DDragonClient::new_no_cache();
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -177,7 +168,7 @@ mod test {
 
         #[test]
         fn result_err_server_unavailable() {
-            assert!(DDragonClient::new().is_err());
+            assert!(DDragonClient::new_no_cache().is_err());
         }
 
         #[test]
@@ -188,7 +179,7 @@ mod test {
                 .with_body(r#"[]"#)
                 .create();
 
-            assert!(DDragonClient::new().is_err());
+            assert!(DDragonClient::new_no_cache().is_err());
         }
 
         #[test]
@@ -198,7 +189,7 @@ mod test {
                 .with_body(r#"some non-deserializable content"#)
                 .create();
 
-            assert!(DDragonClient::new().is_err());
+            assert!(DDragonClient::new_no_cache().is_err());
         }
     }
 

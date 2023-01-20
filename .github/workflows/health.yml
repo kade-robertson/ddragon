@@ -1,16 +1,16 @@
 on:
-  push:
+  pull_request:
     branches: [ master ]
   schedule:
-    - cron: '30 3 * * 1'
+    - cron: '7 7 * * *'
 
 env:
   CARGO_UNSTABLE_SPARSE_REGISTRY: true
 
-name: build-caches
+name: health
 jobs:
-  build-cache:
-    name: build rust caches
+  test:
+    name: health check (${{ matrix.toolchain }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,5 +28,5 @@ jobs:
           prefix-key: 'rust'
           shared-key: 'cache'
 
-      - name: Test (to build cache)
-        run: cargo test -- --test-threads 1
+      - name: Health Check
+        run: cargo test -- --test health

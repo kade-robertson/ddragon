@@ -14,7 +14,7 @@ categories = ["api-bindings"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cacache = "10.0.1"
+cacache = { version = "10.0.1", optional = true }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 thiserror = "1.0.38"
@@ -23,3 +23,7 @@ url = "2.3.1"
 
 [dev-dependencies]
 mockito = "0.31.1"
+
+[features]
+default = ["local-cache"]
+local-cache = ["dep:cacache"]

@@ -4,20 +4,24 @@ Rust library for accessing the latest LoL patch's ddragon data.
 
 - Full JSON deserialization via `serde_json`
 - Local caching via `cacache`
-- Accepts custom `ureq` agents
+- Accepts custom `ureq` agents (which can use the exposed cache middleware)
 
 ## Usage
 
 ```rust
 use ureq;
-use ddragon::DDragonClient;
+use ddragon::{DDragonClient, client::DDragonClientError, cache_middleware::CacheMiddleware};
 
-fn main() -> Result<(), ddragon::client::DDragonClientError> {
+fn main() -> Result<(), DDragonClientError> {
     // Using caching, the preferred option.
-    let client = DDragonClient::with_cache("/path/to/your/cache/dir")?;
+    // If you do not want caching enabled, disable the "local-cache" feature.
+    let client = DDragonClient::new("/path/to/your/cache/dir")?;
 
     // If you want to use an existing agent
-    let client = DDragonClient::with_agent(ureq::Agent::new(), Some("/path/to/your/cache/dir".to_owned()))?;
+    let my_agent = ureq::AgentBuilder::new()
+        .middleware(CacheMiddleware::new("/path/to/your/cache/dir"))
+        .build();
+    let client = DDragonClient::with_agent(my_agent)?;
 
     // See available options on the client and in the models folder.
     let champions = client.champions()?:
