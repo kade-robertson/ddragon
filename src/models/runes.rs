@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 pub type Runes = Vec<Rune>;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Rune {
     pub id: i64,
     pub key: String,
@@ -10,12 +10,12 @@ pub struct Rune {
     pub slots: Vec<Slot>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Slot {
     pub runes: Vec<RuneElement>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RuneElement {
     pub id: i64,
     pub key: String,
