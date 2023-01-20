@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use super::shared::Image;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Items {
     pub version: String,
     pub data: HashMap<String, Item>,
@@ -11,7 +11,7 @@ pub struct Items {
     pub tree: Vec<Tree>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Gold {
     pub base: i64,
     pub total: i64,
@@ -19,7 +19,7 @@ pub struct Gold {
     pub purchasable: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Rune {
     pub isrune: bool,
     pub tier: i64,
@@ -27,7 +27,7 @@ pub struct Rune {
     pub rune_type: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Item {
     pub name: String,
     pub description: String,
@@ -58,7 +58,7 @@ pub struct Item {
     pub special_recipe: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Effect {
     #[serde(rename = "Effect1Amount")]
     pub effect1_amount: String,
@@ -98,20 +98,20 @@ pub struct Effect {
     pub effect18_amount: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Group {
     pub id: String,
     #[serde(rename = "MaxGroupOwnable")]
     pub max_group_ownable: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Tree {
     pub header: String,
     pub tags: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum ItemSprite {
     #[serde(rename = "item0.png")]
     Item0,

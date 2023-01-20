@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub type Challenges = Vec<Challenge>;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Challenge {
     pub id: i64,
     pub name: String,
@@ -16,7 +16,7 @@ pub struct Challenge {
     pub thresholds: Thresholds,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct LevelToIconPath {
     #[serde(rename = "IRON")]
     pub iron: Option<String>,
@@ -38,7 +38,7 @@ pub struct LevelToIconPath {
     pub challenger: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Thresholds {
     #[serde(rename = "IRON")]
     pub iron: Option<RankReward>,
@@ -60,13 +60,13 @@ pub struct Thresholds {
     pub challenger: Option<RankReward>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct RankReward {
     pub value: i64,
     pub rewards: Option<Vec<RewardDetails>>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct RewardDetails {
     pub category: String,
     pub quantity: i64,
