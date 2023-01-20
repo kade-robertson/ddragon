@@ -3,13 +3,13 @@ use std::collections::HashMap;
 
 use super::shared::Image;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SummonerSpells {
     pub version: String,
     pub data: HashMap<String, SummonerSpell>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SummonerSpell {
     pub id: String,
     pub name: String,
@@ -39,7 +39,7 @@ pub struct SummonerSpell {
     pub resource: CostType,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum CostType {
     #[serde(rename = "&nbsp;")]
     Nbsp,
@@ -47,13 +47,13 @@ pub enum CostType {
     NoCost,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum Group {
     #[serde(rename = "spell")]
     Spell,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum SummonerSpellSprite {
     #[serde(rename = "spell0.png")]
     Spell0Png,

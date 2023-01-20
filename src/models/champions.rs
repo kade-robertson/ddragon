@@ -3,14 +3,14 @@ use std::collections::HashMap;
 
 use super::shared::Image;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Champions {
     pub format: String,
     pub version: String,
     pub data: HashMap<String, ChampionData>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ChampionData {
     pub version: String,
     pub id: String,
@@ -25,7 +25,7 @@ pub struct ChampionData {
     pub stats: HashMap<String, f64>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Info {
     pub attack: i64,
     pub defense: i64,
@@ -33,7 +33,7 @@ pub struct Info {
     pub difficulty: i64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum ChampionSprite {
     #[serde(rename = "champion0.png")]
     Champion0,
@@ -49,7 +49,7 @@ pub enum ChampionSprite {
     Champion5,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum Tag {
     Assassin,
     Fighter,
