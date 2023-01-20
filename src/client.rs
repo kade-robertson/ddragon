@@ -5,10 +5,10 @@ use url::Url;
 #[cfg(test)]
 use mockito;
 
-use crate::{
-    cache_middleware::CacheMiddleware,
-    models::{Challenges, Champions, Items, Runes, SummonerSpells, Translations},
-};
+#[cfg(feature = "local-cache")]
+use crate::cache_middleware::CacheMiddleware;
+
+use crate::models::{Challenges, Champions, Items, Runes, SummonerSpells, Translations};
 
 #[derive(Error, Debug)]
 pub enum DDragonClientError {
@@ -59,16 +59,23 @@ impl DDragonClient {
         Self::create(agent, Url::parse(&base_url)?)
     }
 
-    pub fn with_cache(cache_dir: &str) -> Result<Self, DDragonClientError> {
+    #[cfg(feature = "local-cache")]
+    pub fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
         let agent = ureq::AgentBuilder::new()
             .middleware(CacheMiddleware::new(cache_dir))
             .build();
         Self::with_agent(agent)
     }
 
-    pub fn new() -> Result<Self, DDragonClientError> {
+    #[cfg(test)]
+    fn new_no_cache() -> Result<Self, DDragonClientError> {
         let agent = ureq::Agent::new();
         Self::with_agent(agent)
+    }
+
+    #[cfg(not(feature = "local-cache"))]
+    pub fn new() -> Result<Self, DDragonClientError> {
+        Self::new_no_cache()
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
@@ -139,7 +146,7 @@ mod test {
                 .with_body(r#"["0.0.0"]"#)
                 .create();
 
-            let maybe_client = DDragonClient::new();
+            let maybe_client = DDragonClient::new_no_cache();
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -153,7 +160,7 @@ mod test {
                 .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
                 .create();
 
-            let maybe_client = DDragonClient::new();
+            let maybe_client = DDragonClient::new_no_cache();
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -161,7 +168,7 @@ mod test {
 
         #[test]
         fn result_err_server_unavailable() {
-            assert!(DDragonClient::new().is_err());
+            assert!(DDragonClient::new_no_cache().is_err());
         }
 
         #[test]
@@ -172,7 +179,7 @@ mod test {
                 .with_body(r#"[]"#)
                 .create();
 
-            assert!(DDragonClient::new().is_err());
+            assert!(DDragonClient::new_no_cache().is_err());
         }
 
         #[test]
@@ -182,7 +189,7 @@ mod test {
                 .with_body(r#"some non-deserializable content"#)
                 .create();
 
-            assert!(DDragonClient::new().is_err());
+            assert!(DDragonClient::new_no_cache().is_err());
         }
     }
 

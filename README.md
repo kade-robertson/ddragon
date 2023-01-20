@@ -14,7 +14,8 @@ use ddragon::{DDragonClient, client::DDragonClientError, cache_middleware::Cache
 
 fn main() -> Result<(), DDragonClientError> {
     // Using caching, the preferred option.
-    let client = DDragonClient::with_cache("/path/to/your/cache/dir")?;
+    // If you do not want caching enabled, disable the "local-cache" feature.
+    let client = DDragonClient::new("/path/to/your/cache/dir")?;
 
     // If you want to use an existing agent
     let my_agent = ureq::AgentBuilder::new()

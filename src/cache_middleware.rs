@@ -13,7 +13,7 @@ impl CacheMiddleware {
 }
 
 impl Middleware for CacheMiddleware {
-    fn handle(&self, request: Request, _next: MiddlewareNext) -> Result<Response, Error> {
+    fn handle(&self, request: Request, next: MiddlewareNext) -> Result<Response, Error> {
         let binding = request.clone();
         let cache_key = binding.url();
 
@@ -21,7 +21,7 @@ impl Middleware for CacheMiddleware {
             return Response::new(200, "OK", &String::from_utf8_lossy(&data));
         }
 
-        let response = request.call()?;
+        let response = next.handle(request)?;
         if response.status() != 200 {
             return Ok(response);
         }
