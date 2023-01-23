@@ -9,8 +9,8 @@ use mockito;
 use crate::cache_middleware::CacheMiddleware;
 
 use crate::models::{
-    Challenges, Champions, Items, Maps, MissionAssets, ProfileIcons, Runes, SummonerSpells,
-    Translations,
+    Challenges, Champions, Items, Maps, MissionAssets, ProfileIcons, Runes, SpellBuffs,
+    SummonerSpells, Translations,
 };
 
 #[derive(Error, Debug)]
@@ -124,6 +124,10 @@ impl DDragonClient {
 
     pub fn runes(&self) -> Result<Runes, DDragonClientError> {
         self.get_data::<Runes>("./runesReforged.json")
+    }
+
+    pub fn spell_buffs(&self) -> Result<SpellBuffs, DDragonClientError> {
+        self.get_data::<SpellBuffs>("./spellbuffs.json")
     }
 
     pub fn summoner_spells(&self) -> Result<SummonerSpells, DDragonClientError> {

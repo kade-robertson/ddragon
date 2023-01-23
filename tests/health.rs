@@ -18,6 +18,7 @@ fn health_check() {
     client.mission_assets().unwrap();
     client.profile_icons().unwrap();
     client.runes().unwrap();
+    client.spell_buffs().unwrap();
     client.summoner_spells().unwrap();
     client.translations().unwrap();
     let uncached_duration = uncached_start.elapsed();
@@ -30,6 +31,7 @@ fn health_check() {
     client.mission_assets().unwrap();
     client.profile_icons().unwrap();
     client.runes().unwrap();
+    client.spell_buffs().unwrap();
     client.summoner_spells().unwrap();
     client.translations().unwrap();
     let cached_duration = cached_start.elapsed();
