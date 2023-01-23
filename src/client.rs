@@ -9,7 +9,8 @@ use mockito;
 use crate::cache_middleware::CacheMiddleware;
 
 use crate::models::{
-    Challenges, Champions, Items, Maps, MissionAssets, Runes, SummonerSpells, Translations,
+    Challenges, Champions, Items, Maps, MissionAssets, ProfileIcons, Runes, SummonerSpells,
+    Translations,
 };
 
 #[derive(Error, Debug)]
@@ -115,6 +116,10 @@ impl DDragonClient {
 
     pub fn mission_assets(&self) -> Result<MissionAssets, DDragonClientError> {
         self.get_data::<MissionAssets>("./mission-assets.json")
+    }
+
+    pub fn profile_icons(&self) -> Result<ProfileIcons, DDragonClientError> {
+        self.get_data::<ProfileIcons>("./profileicon.json")
     }
 
     pub fn runes(&self) -> Result<Runes, DDragonClientError> {
