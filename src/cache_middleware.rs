@@ -1,10 +1,16 @@
+#![warn(missing_docs)]
+
 use ureq::{Error, Middleware, MiddlewareNext, Request, Response};
 
+/// Handles caching responses locally.
 pub struct CacheMiddleware {
     directory: String,
 }
 
 impl CacheMiddleware {
+    /// Creates a new middleware, with the directory you would like cached
+    /// files to go in specified. Cache file structure beyond that is dictated
+    /// by `cacache`.
     pub fn new(directory: &str) -> Self {
         Self {
             directory: directory.to_owned(),
