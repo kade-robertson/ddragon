@@ -1,5 +1,7 @@
 # ddragon
 
+[![latest version](https://img.shields.io/crates/v/ddragon?style=flat-square)](https://crates.io/crates/ddragon) [![health check status](https://img.shields.io/github/actions/workflow/status/kade-robertson/ddragon/health.yml?label=health&style=flat-square)](https://github.com/kade-robertson/ddragon/actions/workflows/health.yml) [![downloads of latest version](https://img.shields.io/crates/d/ddragon?style=flat-square)](https://crates.io/crates/ddragon) [![latest docs](https://img.shields.io/docsrs/ddragon?style=flat-square)](https://docs.rs/ddragon/latest/ddragon/)
+
 Rust library for accessing the latest LoL patch's ddragon data.
 
 - Full JSON deserialization via `serde_json`
