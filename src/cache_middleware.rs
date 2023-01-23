@@ -1,5 +1,4 @@
 #![warn(missing_docs)]
-#![warn(rustdoc::missing_doc_code_examples)]
 
 use ureq::{Error, Middleware, MiddlewareNext, Request, Response};
 

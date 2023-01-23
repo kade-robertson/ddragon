@@ -11,8 +11,7 @@ Rust library for accessing the latest LoL patch's ddragon data.
 ## Usage
 
 ```rust
-use ureq;
-use ddragon::{DDragonClient, client::DDragonClientError, cache_middleware::CacheMiddleware};
+use ddragon::{cache_middleware::CacheMiddleware, client::DDragonClientError, DDragonClient};
 
 fn main() -> Result<(), DDragonClientError> {
     // Using caching, the preferred option.
@@ -26,11 +25,12 @@ fn main() -> Result<(), DDragonClientError> {
     let client = DDragonClient::with_agent(my_agent)?;
 
     // See available options on the client and in the models folder.
-    let champions = client.champions()?:
+    let champions = client.champions()?;
     let runes = client.runes()?;
 
     Ok(())
 }
+
 ```
 
 ## Roadmap

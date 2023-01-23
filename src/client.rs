@@ -1,5 +1,4 @@
 #![warn(missing_docs)]
-#![warn(rustdoc::missing_doc_code_examples)]
 
 use serde::de::DeserializeOwned;
 use thiserror::Error;
