@@ -26,7 +26,7 @@ pub struct Item {
     pub colloq: String,
     pub plaintext: String,
     pub into: Option<Vec<String>>,
-    pub image: Image<ItemSprite>,
+    pub image: Image,
     pub gold: Gold,
     pub tags: Vec<String>,
     pub maps: HashMap<String, bool>,
@@ -101,14 +101,4 @@ pub struct Group {
 pub struct Tree {
     pub header: String,
     pub tags: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
-pub enum ItemSprite {
-    #[serde(rename = "item0.png")]
-    Item0,
-    #[serde(rename = "item1.png")]
-    Item1,
-    #[serde(rename = "item2.png")]
-    Item2,
 }

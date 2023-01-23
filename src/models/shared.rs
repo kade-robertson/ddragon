@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Image<T: Clone> {
+pub struct Image {
     pub full: String,
-    pub sprite: T,
+    pub sprite: String,
     pub group: String,
     pub x: i64,
     pub y: i64,
