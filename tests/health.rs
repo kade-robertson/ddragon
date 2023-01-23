@@ -13,6 +13,7 @@ fn health_check() {
     let uncached_start = Instant::now();
     client.challenges().unwrap();
     client.champions().unwrap();
+    client.champions_full().unwrap();
     client.items().unwrap();
     client.maps().unwrap();
     client.mission_assets().unwrap();
@@ -26,6 +27,7 @@ fn health_check() {
     let cached_start = Instant::now();
     client.challenges().unwrap();
     client.champions().unwrap();
+    client.champions_full().unwrap();
     client.items().unwrap();
     client.maps().unwrap();
     client.mission_assets().unwrap();
