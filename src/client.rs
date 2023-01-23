@@ -9,8 +9,8 @@ use mockito;
 use crate::cache_middleware::CacheMiddleware;
 
 use crate::models::{
-    Challenges, Champions, ChampionsFull, Items, Maps, MissionAssets, ProfileIcons, Runes,
-    SpellBuffs, SummonerSpells, Translations,
+    champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
+    MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
 };
 
 #[derive(Error, Debug)]
@@ -25,6 +25,8 @@ pub enum DDragonClientError {
     JSONParse(#[from] serde_json::Error),
     #[error("Could not find the latest API version.")]
     NoLatestVersion,
+    #[error("Specific champion data could not be parsed.")]
+    NoChampionData,
 }
 
 pub struct DDragonClient {
@@ -100,6 +102,14 @@ impl DDragonClient {
 
     pub fn challenges(&self) -> Result<Challenges, DDragonClientError> {
         self.get_data::<Challenges>("./challenges.json")
+    }
+
+    pub fn champion(&self, key: &str) -> Result<Champion, DDragonClientError> {
+        self.get_data::<ChampionWrapper>(&format!("./champion/{key}.json"))?
+            .data
+            .get(key)
+            .cloned()
+            .ok_or(DDragonClientError::NoChampionData)
     }
 
     pub fn champions(&self) -> Result<Champions, DDragonClientError> {
