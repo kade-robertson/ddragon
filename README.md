@@ -32,3 +32,11 @@ fn main() -> Result<(), DDragonClientError> {
     Ok(())
 }
 ```
+
+## Roadmap
+
+- [x] Support all `.json` endpoints related to League of Legends
+- [ ] Support endpoints related to Teamfight Tactics
+- [ ] Add additional helpers for obtaining image assets
+- [ ] Add an async API using `reqwest` as the backend
+- [ ] Improve docs
