@@ -1,4 +1,5 @@
 pub mod challenges;
+pub mod champion;
 pub mod champions;
 pub mod champions_full;
 pub mod items;
@@ -12,6 +13,7 @@ pub mod summoner_spells;
 pub mod translations;
 
 pub use challenges::Challenges;
+pub use champion::Champion;
 pub use champions::Champions;
 pub use champions_full::ChampionsFull;
 pub use items::Items;
