@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.3.0](https://github.com/kade-robertson/ddragon/compare/v0.2.0...v0.3.0) (2023-01-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* add single champion query ([#18](https://github.com/kade-robertson/ddragon/issues/18))
+* image sprite property should just be string ([#13](https://github.com/kade-robertson/ddragon/issues/13))
+* caching as default feature, as ureq middleware ([#10](https://github.com/kade-robertson/ddragon/issues/10))
+
+### Features
+
+* add single champion query ([#18](https://github.com/kade-robertson/ddragon/issues/18)) ([a9f79a2](https://github.com/kade-robertson/ddragon/commit/a9f79a275b37fa6b01c2ef7496f293e99dc5e0f1))
+* caching as default feature, as ureq middleware ([#10](https://github.com/kade-robertson/ddragon/issues/10)) ([9abce52](https://github.com/kade-robertson/ddragon/commit/9abce523695ecec3ab0861fb188b938c0e5281b0))
+* derive debug for all models ([#7](https://github.com/kade-robertson/ddragon/issues/7)) ([9b4aad7](https://github.com/kade-robertson/ddragon/commit/9b4aad7de26053fe261d58b3fe56fccf248948a5))
+* support full champion data ([#17](https://github.com/kade-robertson/ddragon/issues/17)) ([2eaa347](https://github.com/kade-robertson/ddragon/commit/2eaa347e0f26f477c2b4ed5fc37ca133229b5be0))
+* support maps ([#11](https://github.com/kade-robertson/ddragon/issues/11)) ([74d4ca1](https://github.com/kade-robertson/ddragon/commit/74d4ca12f9e365f7303ab457defb011524db0dda))
+* support mission assets ([#12](https://github.com/kade-robertson/ddragon/issues/12)) ([6479c47](https://github.com/kade-robertson/ddragon/commit/6479c47097cbcfa8e6ce638942de45cb23906374))
+* support profile icons ([#15](https://github.com/kade-robertson/ddragon/issues/15)) ([b0aef4e](https://github.com/kade-robertson/ddragon/commit/b0aef4eec1af1b8c1bc0169d63066ea395925473))
+* support spell buffs ([#16](https://github.com/kade-robertson/ddragon/issues/16)) ([bca7c0b](https://github.com/kade-robertson/ddragon/commit/bca7c0bae4d854ba44275698969d4bf4883b6151))
+
+
+### Bug Fixes
+
+* box ureq error to reduce enum size ([#9](https://github.com/kade-robertson/ddragon/issues/9)) ([0f48023](https://github.com/kade-robertson/ddragon/commit/0f480230b4c78d8d1ccbbe0d4757a9fc4605b6ee))
+* image sprite property should just be string ([#13](https://github.com/kade-robertson/ddragon/issues/13)) ([141527e](https://github.com/kade-robertson/ddragon/commit/141527ef0293b17d6fa5dfc5894146968fb89769))
+
 ## [0.2.0](https://github.com/uggo-lol/ddragon/compare/v0.1.0...v0.2.0) (2023-01-20)
 
 
