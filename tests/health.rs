@@ -16,6 +16,7 @@ fn health_check() {
     client.items().unwrap();
     client.maps().unwrap();
     client.mission_assets().unwrap();
+    client.profile_icons().unwrap();
     client.runes().unwrap();
     client.summoner_spells().unwrap();
     client.translations().unwrap();
@@ -27,6 +28,7 @@ fn health_check() {
     client.items().unwrap();
     client.maps().unwrap();
     client.mission_assets().unwrap();
+    client.profile_icons().unwrap();
     client.runes().unwrap();
     client.summoner_spells().unwrap();
     client.translations().unwrap();
