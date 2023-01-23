@@ -1,3 +1,6 @@
+#![warn(missing_docs)]
+#![warn(rustdoc::missing_doc_code_examples)]
+
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 use url::Url;
@@ -14,23 +17,36 @@ use crate::models::{
 };
 
 #[derive(Error, Debug)]
+/// Any potential error the client may run into during operation.
 pub enum DDragonClientError {
     #[error("Could not parse URL.")]
+    /// Indicates the operation failed because parsing a URL via the `url` crate
+    /// failed.
     UrlParse(#[from] url::ParseError),
     #[error("Could not complete request.")]
+    /// Indicates a request failed, for the same reasons any `ureq` request may
+    /// fail.
     Request(#[from] Box<ureq::Error>),
     #[error("Could not parse JSON data.")]
+    /// Indicates a failed attempt at parsing JSON data.
     Parse(#[from] std::io::Error),
     #[error("Could not parse JSON data.")]
+    /// Indicates a failed attempt at parsing JSON data.
     JSONParse(#[from] serde_json::Error),
     #[error("Could not find the latest API version.")]
+    /// Indicates during instantiation that the version lists provided by the
+    /// ddragon API was empty.
     NoLatestVersion,
     #[error("Specific champion data could not be parsed.")]
+    /// Indicates data for the requested champion couldn't be found in the
+    /// parsed document.
     NoChampionData,
 }
 
+/// Provides access to the ddragon API.
 pub struct DDragonClient {
     agent: ureq::Agent,
+    /// The current version of the API data reported back to us from the API.
     pub version: String,
     base_url: Url,
 }
@@ -54,6 +70,9 @@ impl DDragonClient {
         })
     }
 
+    /// Creates a new client using a provided agent, in case you may want to
+    /// customize the agent behaviour with additional middlewares (or anything
+    /// else you might want to do)
     pub fn with_agent(agent: ureq::Agent) -> Result<Self, DDragonClientError> {
         #[cfg(not(test))]
         let base_url = "https://ddragon.leagueoflegends.com".to_owned();
@@ -65,6 +84,8 @@ impl DDragonClient {
     }
 
     #[cfg(feature = "local-cache")]
+    /// Creates a new client with the specified directory as the caching location
+    /// for any data the client downloads.
     pub fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
         let agent = ureq::AgentBuilder::new()
             .middleware(CacheMiddleware::new(cache_dir))
@@ -79,6 +100,7 @@ impl DDragonClient {
     }
 
     #[cfg(not(feature = "local-cache"))]
+    /// Creates a new client without using a local cache.
     pub fn new() -> Result<Self, DDragonClientError> {
         Self::new_no_cache()
     }
@@ -100,10 +122,15 @@ impl DDragonClient {
             .map_err(|e| e.into())
     }
 
+    /// Returns challenge data.
     pub fn challenges(&self) -> Result<Challenges, DDragonClientError> {
         self.get_data::<Challenges>("./challenges.json")
     }
 
+    /// Returns data for a single champion. The champion's name or numeric key
+    /// should not be used here -- this should be the key property on the
+    /// Champion struct. This is usually the name, but differs in a bunch of
+    /// cases (e.x. Wukong's key is MonkeyKing).
     pub fn champion(&self, key: &str) -> Result<Champion, DDragonClientError> {
         self.get_data::<ChampionWrapper>(&format!("./champion/{key}.json"))?
             .data
@@ -112,42 +139,52 @@ impl DDragonClient {
             .ok_or(DDragonClientError::NoChampionData)
     }
 
+    /// Returns champion data -- short version.
     pub fn champions(&self) -> Result<Champions, DDragonClientError> {
         self.get_data::<Champions>("./champion.json")
     }
 
+    /// Returns champion data -- complete version.
     pub fn champions_full(&self) -> Result<ChampionsFull, DDragonClientError> {
         self.get_data::<ChampionsFull>("./championFull.json")
     }
 
+    /// Returns item data.
     pub fn items(&self) -> Result<Items, DDragonClientError> {
         self.get_data::<Items>("./item.json")
     }
 
+    /// Returns map data.
     pub fn maps(&self) -> Result<Maps, DDragonClientError> {
         self.get_data::<Maps>("./map.json")
     }
 
+    /// Returns mission asset data.
     pub fn mission_assets(&self) -> Result<MissionAssets, DDragonClientError> {
         self.get_data::<MissionAssets>("./mission-assets.json")
     }
 
+    /// Returns profile icon data.
     pub fn profile_icons(&self) -> Result<ProfileIcons, DDragonClientError> {
         self.get_data::<ProfileIcons>("./profileicon.json")
     }
 
+    /// Returns rune data.
     pub fn runes(&self) -> Result<Runes, DDragonClientError> {
         self.get_data::<Runes>("./runesReforged.json")
     }
 
+    /// Returns spell buff data.
     pub fn spell_buffs(&self) -> Result<SpellBuffs, DDragonClientError> {
         self.get_data::<SpellBuffs>("./spellbuffs.json")
     }
 
+    /// Returns summoner spell data.
     pub fn summoner_spells(&self) -> Result<SummonerSpells, DDragonClientError> {
         self.get_data::<SummonerSpells>("./summoner.json")
     }
 
+    /// Returns translation data.
     pub fn translations(&self) -> Result<Translations, DDragonClientError> {
         self.get_data::<Translations>("./language.json")
     }
