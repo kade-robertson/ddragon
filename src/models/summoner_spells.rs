@@ -35,7 +35,7 @@ pub struct SummonerSpell {
     pub range: Vec<i64>,
     #[serde(rename = "rangeBurn")]
     pub range_burn: String,
-    pub image: Image<SummonerSpellSprite>,
+    pub image: Image,
     pub resource: CostType,
 }
 
@@ -45,16 +45,4 @@ pub enum CostType {
     Nbsp,
     #[serde(rename = "No Cost")]
     NoCost,
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
-pub enum Group {
-    #[serde(rename = "spell")]
-    Spell,
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
-pub enum SummonerSpellSprite {
-    #[serde(rename = "spell0.png")]
-    Spell0Png,
 }

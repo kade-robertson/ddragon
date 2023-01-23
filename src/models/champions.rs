@@ -19,7 +19,7 @@ pub struct ChampionData {
     pub title: String,
     pub blurb: String,
     pub info: Info,
-    pub image: Image<ChampionSprite>,
+    pub image: Image,
     pub tags: Vec<Tag>,
     pub partype: String,
     pub stats: HashMap<String, f64>,
@@ -31,22 +31,6 @@ pub struct Info {
     pub defense: i64,
     pub magic: i64,
     pub difficulty: i64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
-pub enum ChampionSprite {
-    #[serde(rename = "champion0.png")]
-    Champion0,
-    #[serde(rename = "champion1.png")]
-    Champion1,
-    #[serde(rename = "champion2.png")]
-    Champion2,
-    #[serde(rename = "champion3.png")]
-    Champion3,
-    #[serde(rename = "champion4.png")]
-    Champion4,
-    #[serde(rename = "champion5.png")]
-    Champion5,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]

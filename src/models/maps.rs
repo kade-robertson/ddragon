@@ -15,5 +15,5 @@ pub struct Map {
     pub map_name: String,
     #[serde(rename = "MapId")]
     pub map_id: String,
-    pub image: Image<String>,
+    pub image: Image,
 }
