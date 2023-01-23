@@ -30,19 +30,11 @@ pub struct SummonerSpell {
     pub summoner_level: i64,
     pub modes: Vec<String>,
     #[serde(rename = "costType")]
-    pub cost_type: CostType,
+    pub cost_type: String,
     pub maxammo: String,
     pub range: Vec<i64>,
     #[serde(rename = "rangeBurn")]
     pub range_burn: String,
     pub image: Image,
-    pub resource: CostType,
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
-pub enum CostType {
-    #[serde(rename = "&nbsp;")]
-    Nbsp,
-    #[serde(rename = "No Cost")]
-    NoCost,
+    pub resource: Option<String>,
 }
