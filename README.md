@@ -5,7 +5,7 @@
 Rust library for accessing the latest LoL patch's ddragon data.
 
 - Full JSON deserialization via `serde_json`
-- Local caching via `cacache`
+- Local caching via `cacache-sync`
 - Accepts custom `ureq` agents (which can use the exposed cache middleware)
 
 ## Usage
