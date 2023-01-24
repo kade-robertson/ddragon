@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/kade-robertson/ddragon/compare/v0.3.0...v0.3.1) (2023-01-24)
+
+
+### Bug Fixes
+
+* move to sync-only cacache ([#20](https://github.com/kade-robertson/ddragon/issues/20)) ([5ba5171](https://github.com/kade-robertson/ddragon/commit/5ba51714ea2e481e57d3676bc639d5782e4040f2))
+
 ## [0.3.0](https://github.com/kade-robertson/ddragon/compare/v0.2.0...v0.3.0) (2023-01-23)
 
 
