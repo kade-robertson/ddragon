@@ -1,15 +1,14 @@
 #![warn(missing_docs)]
 
+use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::Client;
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 use url::Url;
 
 #[cfg(test)]
 use mockito;
-
-#[cfg(feature = "local-cache")]
-use crate::cache_middleware::CacheMiddleware;
 
 use crate::models::{
     champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
@@ -27,6 +26,10 @@ pub enum AsyncDDragonClientError {
     /// Indicates a request failed, for the same reasons any `reqwest` request may
     /// fail.
     Request(#[from] reqwest::Error),
+    #[error("Could not complete request.")]
+    /// Indicates a request failed, for the same reasons any `reqwest` request may
+    /// fail.
+    MiddlewareRequest(#[from] reqwest_middleware::Error),
     #[error("Could not parse JSON data.")]
     /// Indicates a failed attempt at parsing JSON data.
     Parse(#[from] std::io::Error),
@@ -45,14 +48,17 @@ pub enum AsyncDDragonClientError {
 
 /// Provides access to the ddragon API.
 pub struct AsyncDDragonClient {
-    agent: Client,
+    agent: ClientWithMiddleware,
     /// The current version of the API data reported back to us from the API.
     pub version: String,
     base_url: Url,
 }
 
 impl AsyncDDragonClient {
-    async fn create(agent: Client, base_url: Url) -> Result<Self, AsyncDDragonClientError> {
+    async fn create(
+        agent: ClientWithMiddleware,
+        base_url: Url,
+    ) -> Result<Self, AsyncDDragonClientError> {
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
             .send()
@@ -74,7 +80,7 @@ impl AsyncDDragonClient {
     /// Creates a new client using a provided agent, in case you may want to
     /// customize the agent behaviour with additional middlewares (or anything
     /// else you might want to do)
-    pub async fn with_agent(agent: Client) -> Result<Self, AsyncDDragonClientError> {
+    pub async fn with_agent(agent: ClientWithMiddleware) -> Result<Self, AsyncDDragonClientError> {
         #[cfg(not(test))]
         let base_url = "https://ddragon.leagueoflegends.com".to_owned();
 
@@ -84,24 +90,25 @@ impl AsyncDDragonClient {
         Self::create(agent, Url::parse(&base_url)?).await
     }
 
-    #[cfg(feature = "local-cache")]
+    /// Creates a new client using a provided agent, in case you want to bypass
+    /// any caching mechanics.
+    pub async fn with_plain_agent(agent: Client) -> Result<Self, AsyncDDragonClientError> {
+        Self::with_agent(ClientBuilder::new(agent).build()).await
+    }
+
     /// Creates a new client with the specified directory as the caching location
     /// for any data the client downloads.
     pub async fn new(cache_dir: &str) -> Result<Self, AsyncDDragonClientError> {
-        let agent = Client::new();
+        let agent = ClientBuilder::new(Client::new())
+            .with(Cache(HttpCache {
+                mode: CacheMode::ForceCache,
+                manager: CACacheManager {
+                    path: cache_dir.to_owned(),
+                },
+                options: None,
+            }))
+            .build();
         Self::with_agent(agent).await
-    }
-
-    #[cfg(any(test, not(feature = "local-cache")))]
-    async fn new_no_cache() -> Result<Self, AsyncDDragonClientError> {
-        let agent = Client::new();
-        Self::with_agent(agent).await
-    }
-
-    #[cfg(not(feature = "local-cache"))]
-    /// Creates a new client without using a local cache.
-    pub async fn new() -> Result<Self, AsyncDDragonClientError> {
-        Self::new_no_cache().await
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
@@ -204,7 +211,7 @@ mod test {
     impl Default for AsyncDDragonClient {
         fn default() -> Self {
             Self {
-                agent: Client::new(),
+                agent: ClientBuilder::new(Client::new()).build(),
                 version: "0.0.0".to_owned(),
                 base_url: Url::parse(&mockito::server_url()).unwrap(),
             }
@@ -222,7 +229,7 @@ mod test {
                 .with_body(r#"["0.0.0"]"#)
                 .create();
 
-            let maybe_client = block_on(AsyncDDragonClient::new_no_cache());
+            let maybe_client = block_on(AsyncDDragonClient::with_plain_agent(Client::new()));
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -236,7 +243,7 @@ mod test {
                 .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
                 .create();
 
-            let maybe_client = block_on(AsyncDDragonClient::new_no_cache());
+            let maybe_client = block_on(AsyncDDragonClient::with_plain_agent(Client::new()));
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -244,7 +251,7 @@ mod test {
 
         #[test]
         fn result_err_server_unavailable() {
-            assert!(block_on(AsyncDDragonClient::new_no_cache()).is_err());
+            assert!(block_on(AsyncDDragonClient::with_plain_agent(Client::new())).is_err());
         }
 
         #[test]
@@ -255,7 +262,7 @@ mod test {
                 .with_body(r#"[]"#)
                 .create();
 
-            assert!(block_on(AsyncDDragonClient::new_no_cache()).is_err());
+            assert!(block_on(AsyncDDragonClient::with_plain_agent(Client::new())).is_err());
         }
 
         #[test]
@@ -265,7 +272,7 @@ mod test {
                 .with_body(r#"some non-deserializable content"#)
                 .create();
 
-            assert!(block_on(AsyncDDragonClient::new_no_cache()).is_err());
+            assert!(block_on(AsyncDDragonClient::with_plain_agent(Client::new())).is_err());
         }
     }
 
