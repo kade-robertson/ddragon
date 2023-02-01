@@ -8,8 +8,15 @@ pub mod models;
 pub mod cache_middleware;
 
 #[cfg(feature = "sync")]
-/// Contains the client API.
+/// Contains the sync version of the client API.
 pub mod client;
 
 #[cfg(feature = "sync")]
 pub use client::DDragonClient;
+
+#[cfg(feature = "async")]
+/// Contains the async version of the client API.
+pub mod async_client;
+
+#[cfg(feature = "async")]
+pub use async_client::AsyncDDragonClient;
