@@ -5,8 +5,12 @@
 Rust library for accessing the latest LoL patch's ddragon data.
 
 - Full JSON deserialization via `serde_json`
-- Local caching via `cacache-sync`
-- Accepts custom `ureq` agents (which can use the exposed cache middleware)
+- Provides a synchronous API by default
+  - Local caching via `cacache-sync`
+  - Accepts custom `ureq` agents (which can use the exposed cache middleware)
+- Optionally, an asynchronous API can be used that maintains the same featureset
+  - Local caching is handled by `http-cache-reqwest` rather than a custom middleware
+  - Also accepts custom `reqwest` or `reqwest-middleware` clients
 
 ## Usage
 
@@ -30,7 +34,44 @@ fn main() -> Result<(), DDragonClientError> {
 
     Ok(())
 }
+```
 
+## Features
+
+The following crate features are available:
+
+- `sync` (on by default) enables the synchronous client.
+  - Provides the `ddragon::client` module.
+  - Provides the re-exported `ddragon::DDragonClient` client.
+  - Adds `url`, `thiserror`, and `ureq` with the `json` feature enabled as dependencies.
+- `local-cache` (on by default) enables the synchronous client.
+  - Provides the `ddragon::cache_middleware` module.
+  - Changes the default `DDragonClient::new()` implementation to set up caching.
+  - Adds `cacache-sync` as a dependency.
+- `async` enables the asynchronous client.
+  - Provides the `ddragon::async_client` module.
+  - Provides the re-exported `ddragon::AsyncDDragonClient` client.
+  - Adds `reqwest` with the `json` feature, `reqwest-middleware` and `http-cache-reqwest` as dependencies.
+
+To use the library with just the synchronous version, it should be as simple as adding any other dependency:
+
+```toml
+[dependencies]
+ddragon = "<version>"
+```
+
+If you want the asynchronous client only, you probably don't want to pull in the dependencies related to the synchronous code, so you can do this:
+
+```toml
+[dependencies]
+ddragon = { version = "<version>", default-features = false, features = ["async"] }
+```
+
+If you only want the DDragon models (none of the client code), you can use
+
+```toml
+[dependencies]
+ddragon = { version = "<version>", default-features = false }
 ```
 
 ## Roadmap
@@ -38,5 +79,5 @@ fn main() -> Result<(), DDragonClientError> {
 - [x] Support all `.json` endpoints related to League of Legends
 - [ ] Support endpoints related to Teamfight Tactics
 - [ ] Add additional helpers for obtaining image assets
-- [ ] Add an async API using `reqwest` as the backend
+- [x] Add an async API using `reqwest` as the backend
 - [ ] Improve docs
