@@ -28,7 +28,7 @@ mockito = "0.31.1"
 tokio-test = "0.4.2"
 
 [features]
-default = ["sync", "local-cache", "async"]
+default = ["sync", "local-cache"]
 client = ["dep:thiserror", "dep:url"]
 sync = ["client", "dep:ureq"]
 local-cache = ["sync", "dep:cacache-sync"]

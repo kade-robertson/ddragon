@@ -15,7 +15,7 @@ Rust library for accessing the latest LoL patch's ddragon data.
 ## Usage
 
 ```rust
-use ddragon::{cache_middleware::CacheMiddleware, client::DDragonClientError, DDragonClient};
+use ddragon::{cache_middleware::CacheMiddleware, DDragonClientError, DDragonClient};
 
 fn main() -> Result<(), DDragonClientError> {
     // Using caching, the preferred option.

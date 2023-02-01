@@ -1,7 +1,10 @@
+#[cfg(any(feature = "sync", feature = "async"))]
 use std::{env::temp_dir, fs::remove_dir_all, time::Instant};
 
+#[cfg(feature = "sync")]
 use ddragon::DDragonClient;
 
+#[cfg(feature = "sync")]
 #[test]
 fn health_check() {
     let tempdir = temp_dir().join("ddragon-cache");

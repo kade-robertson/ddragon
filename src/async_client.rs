@@ -4,44 +4,18 @@ use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use serde::de::DeserializeOwned;
-use thiserror::Error;
 use url::Url;
 
 #[cfg(test)]
 use mockito;
 
-use crate::models::{
-    champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
-    MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
+use crate::{
+    models::{
+        champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
+        MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
+    },
+    DDragonClientError,
 };
-
-#[derive(Error, Debug)]
-/// Any potential error the client may run into during operation.
-pub enum AsyncDDragonClientError {
-    #[error("Could not parse URL.")]
-    /// Indicates the operation failed because parsing a URL via the `url` crate
-    /// failed.
-    UrlParse(#[from] url::ParseError),
-    #[error("Could not complete request.")]
-    /// Indicates a request failed, for the same reasons any `reqwest` request may
-    /// fail.
-    Request(#[from] reqwest::Error),
-    #[error("Could not complete request.")]
-    /// Indicates a request failed, for the same reasons any `reqwest` request may
-    /// fail.
-    MiddlewareRequest(#[from] reqwest_middleware::Error),
-    #[error("Could not parse JSON data.")]
-    /// Indicates a failed attempt at parsing JSON data.
-    Parse(#[from] std::io::Error),
-    #[error("Could not find the latest API version.")]
-    /// Indicates during instantiation that the version lists provided by the
-    /// ddragon API was empty.
-    NoLatestVersion,
-    #[error("Specific champion data could not be parsed.")]
-    /// Indicates data for the requested champion couldn't be found in the
-    /// parsed document.
-    NoChampionData,
-}
 
 /// Provides access to the ddragon API.
 pub struct AsyncDDragonClient {
@@ -55,7 +29,7 @@ impl AsyncDDragonClient {
     async fn create(
         agent: ClientWithMiddleware,
         base_url: Url,
-    ) -> Result<Self, AsyncDDragonClientError> {
+    ) -> Result<Self, DDragonClientError> {
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
             .send()
@@ -65,7 +39,7 @@ impl AsyncDDragonClient {
 
         let latest_version = version_list
             .get(0)
-            .ok_or(AsyncDDragonClientError::NoLatestVersion)?;
+            .ok_or(DDragonClientError::NoLatestVersion)?;
 
         Ok(AsyncDDragonClient {
             agent,
@@ -77,7 +51,7 @@ impl AsyncDDragonClient {
     /// Creates a new client using a provided agent, in case you may want to
     /// customize the agent behaviour with additional middlewares (or anything
     /// else you might want to do)
-    pub async fn with_agent(agent: ClientWithMiddleware) -> Result<Self, AsyncDDragonClientError> {
+    pub async fn with_agent(agent: ClientWithMiddleware) -> Result<Self, DDragonClientError> {
         #[cfg(not(test))]
         let base_url = "https://ddragon.leagueoflegends.com".to_owned();
 
@@ -89,13 +63,13 @@ impl AsyncDDragonClient {
 
     /// Creates a new client using a provided agent, in case you want to bypass
     /// any caching mechanics.
-    pub async fn with_plain_agent(agent: Client) -> Result<Self, AsyncDDragonClientError> {
+    pub async fn with_plain_agent(agent: Client) -> Result<Self, DDragonClientError> {
         Self::with_agent(ClientBuilder::new(agent).build()).await
     }
 
     /// Creates a new client with the specified directory as the caching location
     /// for any data the client downloads.
-    pub async fn new(cache_dir: &str) -> Result<Self, AsyncDDragonClientError> {
+    pub async fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
         let agent = ClientBuilder::new(Client::new())
             .with(Cache(HttpCache {
                 mode: CacheMode::ForceCache,
@@ -113,10 +87,7 @@ impl AsyncDDragonClient {
             .join(&format!("/cdn/{}/data/en_US/", &self.version))
     }
 
-    async fn get_data<T: DeserializeOwned>(
-        &self,
-        endpoint: &str,
-    ) -> Result<T, AsyncDDragonClientError> {
+    async fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, DDragonClientError> {
         let joined_url = self.get_data_url()?.join(endpoint)?;
         let request_url = joined_url.as_str();
 
@@ -130,7 +101,7 @@ impl AsyncDDragonClient {
     }
 
     /// Returns challenge data.
-    pub async fn challenges(&self) -> Result<Challenges, AsyncDDragonClientError> {
+    pub async fn challenges(&self) -> Result<Challenges, DDragonClientError> {
         self.get_data::<Challenges>("./challenges.json").await
     }
 
@@ -138,63 +109,63 @@ impl AsyncDDragonClient {
     /// should not be used here -- this should be the key property on the
     /// Champion struct. This is usually the name, but differs in a bunch of
     /// cases (e.x. Wukong's key is MonkeyKing).
-    pub async fn champion(&self, key: &str) -> Result<Champion, AsyncDDragonClientError> {
+    pub async fn champion(&self, key: &str) -> Result<Champion, DDragonClientError> {
         self.get_data::<ChampionWrapper>(&format!("./champion/{key}.json"))
             .await?
             .data
             .get(key)
             .cloned()
-            .ok_or(AsyncDDragonClientError::NoChampionData)
+            .ok_or(DDragonClientError::NoChampionData)
     }
 
     /// Returns champion data -- short version.
-    pub async fn champions(&self) -> Result<Champions, AsyncDDragonClientError> {
+    pub async fn champions(&self) -> Result<Champions, DDragonClientError> {
         self.get_data::<Champions>("./champion.json").await
     }
 
     /// Returns champion data -- complete version.
-    pub async fn champions_full(&self) -> Result<ChampionsFull, AsyncDDragonClientError> {
+    pub async fn champions_full(&self) -> Result<ChampionsFull, DDragonClientError> {
         self.get_data::<ChampionsFull>("./championFull.json").await
     }
 
     /// Returns item data.
-    pub async fn items(&self) -> Result<Items, AsyncDDragonClientError> {
+    pub async fn items(&self) -> Result<Items, DDragonClientError> {
         self.get_data::<Items>("./item.json").await
     }
 
     /// Returns map data.
-    pub async fn maps(&self) -> Result<Maps, AsyncDDragonClientError> {
+    pub async fn maps(&self) -> Result<Maps, DDragonClientError> {
         self.get_data::<Maps>("./map.json").await
     }
 
     /// Returns mission asset data.
-    pub async fn mission_assets(&self) -> Result<MissionAssets, AsyncDDragonClientError> {
+    pub async fn mission_assets(&self) -> Result<MissionAssets, DDragonClientError> {
         self.get_data::<MissionAssets>("./mission-assets.json")
             .await
     }
 
     /// Returns profile icon data.
-    pub async fn profile_icons(&self) -> Result<ProfileIcons, AsyncDDragonClientError> {
+    pub async fn profile_icons(&self) -> Result<ProfileIcons, DDragonClientError> {
         self.get_data::<ProfileIcons>("./profileicon.json").await
     }
 
     /// Returns rune data.
-    pub async fn runes(&self) -> Result<Runes, AsyncDDragonClientError> {
+    pub async fn runes(&self) -> Result<Runes, DDragonClientError> {
         self.get_data::<Runes>("./runesReforged.json").await
     }
 
     /// Returns spell buff data.
-    pub async fn spell_buffs(&self) -> Result<SpellBuffs, AsyncDDragonClientError> {
+    pub async fn spell_buffs(&self) -> Result<SpellBuffs, DDragonClientError> {
         self.get_data::<SpellBuffs>("./spellbuffs.json").await
     }
 
     /// Returns summoner spell data.
-    pub async fn summoner_spells(&self) -> Result<SummonerSpells, AsyncDDragonClientError> {
+    pub async fn summoner_spells(&self) -> Result<SummonerSpells, DDragonClientError> {
         self.get_data::<SummonerSpells>("./summoner.json").await
     }
 
     /// Returns translation data.
-    pub async fn translations(&self) -> Result<Translations, AsyncDDragonClientError> {
+    pub async fn translations(&self) -> Result<Translations, DDragonClientError> {
         self.get_data::<Translations>("./language.json").await
     }
 }

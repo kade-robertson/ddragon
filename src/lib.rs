@@ -3,6 +3,12 @@
 /// Contains the structs that can be returned by the client API.
 pub mod models;
 
+#[cfg(any(feature = "sync", feature = "async"))]
+mod error;
+
+#[cfg(any(feature = "sync", feature = "async"))]
+pub use error::DDragonClientError;
+
 #[cfg(feature = "local-cache")]
 /// Contains the local file caching middleware used for `ureq`.
 pub mod cache_middleware;
