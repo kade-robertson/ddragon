@@ -29,9 +29,6 @@ pub enum DDragonClientError {
     #[error("Could not parse JSON data.")]
     /// Indicates a failed attempt at parsing JSON data.
     Parse(#[from] std::io::Error),
-    #[error("Could not parse JSON data.")]
-    /// Indicates a failed attempt at parsing JSON data.
-    JSONParse(#[from] serde_json::Error),
     #[error("Could not find the latest API version.")]
     /// Indicates during instantiation that the version lists provided by the
     /// ddragon API was empty.
@@ -277,9 +274,7 @@ mod test {
         #[test]
         fn get_data_err_if_server_unavailable() {
             let client = DDragonClient::default();
-            assert!(client
-                .get_data::<serde_json::Value>("/fake-endpoint")
-                .is_err());
+            assert!(client.get_data::<String>("/fake-endpoint").is_err());
         }
 
         #[test]
@@ -291,7 +286,7 @@ mod test {
                 .create();
 
             let client = DDragonClient::default();
-            assert!(client.get_data::<serde_json::Value>("./data.json").is_err());
+            assert!(client.get_data::<String>("./data.json").is_err());
         }
 
         #[test]
