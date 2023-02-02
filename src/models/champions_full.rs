@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use super::Champion;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct ChampionsFull {
     pub format: String,
     pub version: String,

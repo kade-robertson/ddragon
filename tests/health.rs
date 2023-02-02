@@ -45,6 +45,9 @@ fn health_check() {
 
     assert!(cached_duration < uncached_duration);
     assert_eq!(challenges, cached_challenges);
+    assert_eq!(champion, cached_champion);
+    assert_eq!(champions, cached_champions);
+    assert_eq!(champions_full, cached_champions_full);
 }
 
 #[cfg(feature = "async")]
@@ -97,4 +100,7 @@ fn async_health_check() {
 
     assert!(cached_duration < uncached_duration);
     assert_eq!(challenges, cached_challenges);
+    assert_eq!(champion, cached_champion);
+    assert_eq!(champions, cached_champions);
+    assert_eq!(champions_full, cached_champions_full);
 }
