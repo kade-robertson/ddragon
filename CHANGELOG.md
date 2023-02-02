@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.0](https://github.com/kade-robertson/ddragon/compare/v0.3.1...v0.4.0) (2023-02-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* simplify featureset ([#24](https://github.com/kade-robertson/ddragon/issues/24))
+
+### Features
+
+* add an async API ([#22](https://github.com/kade-robertson/ddragon/issues/22)) ([4f00b9c](https://github.com/kade-robertson/ddragon/commit/4f00b9cfbe9828291121b14cf12528a1a97f9501))
+
+
+### Code Refactoring
+
+* simplify featureset ([#24](https://github.com/kade-robertson/ddragon/issues/24)) ([97c98cc](https://github.com/kade-robertson/ddragon/commit/97c98cc97a32b8320ffe25fcf81ac5af8c938c42))
+
 ## [0.3.1](https://github.com/kade-robertson/ddragon/compare/v0.3.0...v0.3.1) (2023-01-24)
 
 
