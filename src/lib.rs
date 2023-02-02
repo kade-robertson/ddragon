@@ -9,7 +9,7 @@ mod error;
 #[cfg(any(feature = "sync", feature = "async"))]
 pub use error::DDragonClientError;
 
-#[cfg(feature = "local-cache")]
+#[cfg(feature = "sync")]
 /// Contains the local file caching middleware used for `ureq`.
 pub mod cache_middleware;
 

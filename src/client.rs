@@ -6,7 +6,6 @@ use url::Url;
 #[cfg(test)]
 use mockito;
 
-#[cfg(feature = "local-cache")]
 use crate::cache_middleware::CacheMiddleware;
 
 use crate::{
@@ -57,7 +56,6 @@ impl DDragonClient {
         Self::create(agent, Url::parse(&base_url)?)
     }
 
-    #[cfg(feature = "local-cache")]
     /// Creates a new client with the specified directory as the caching location
     /// for any data the client downloads.
     pub fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
@@ -67,16 +65,10 @@ impl DDragonClient {
         Self::with_agent(agent)
     }
 
-    #[cfg(any(test, not(feature = "local-cache")))]
+    #[cfg(test)]
     fn new_no_cache() -> Result<Self, DDragonClientError> {
         let agent = ureq::Agent::new();
         Self::with_agent(agent)
-    }
-
-    #[cfg(not(feature = "local-cache"))]
-    /// Creates a new client without using a local cache.
-    pub fn new() -> Result<Self, DDragonClientError> {
-        Self::new_no_cache()
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {

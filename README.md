@@ -18,8 +18,6 @@ Rust library for accessing the latest LoL patch's ddragon data.
 use ddragon::{cache_middleware::CacheMiddleware, DDragonClientError, DDragonClient};
 
 fn main() -> Result<(), DDragonClientError> {
-    // Using caching, the preferred option.
-    // If you do not want caching enabled, disable the "local-cache" feature.
     let client = DDragonClient::new("/path/to/your/cache/dir")?;
 
     // If you want to use an existing agent
@@ -41,13 +39,9 @@ fn main() -> Result<(), DDragonClientError> {
 The following crate features are available:
 
 - `sync` (on by default) enables the synchronous client.
-  - Provides the `ddragon::client` module.
+  - Provides the `ddragon::client` and `ddragon::cache_middleware` module.
   - Provides the re-exported `ddragon::DDragonClient` client.
-  - Adds `url`, `thiserror`, and `ureq` with the `json` feature enabled as dependencies.
-- `local-cache` (on by default) enables the synchronous client.
-  - Provides the `ddragon::cache_middleware` module.
-  - Changes the default `DDragonClient::new()` implementation to set up caching.
-  - Adds `cacache-sync` as a dependency.
+  - Adds `cacache-sync`, `url`, `thiserror`, and `ureq` with the `json` feature enabled as dependencies.
 - `async` enables the asynchronous client.
   - Provides the `ddragon::async_client` module.
   - Provides the re-exported `ddragon::AsyncDDragonClient` client.
