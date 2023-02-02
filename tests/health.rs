@@ -48,6 +48,14 @@ fn health_check() {
     assert_eq!(champion, cached_champion);
     assert_eq!(champions, cached_champions);
     assert_eq!(champions_full, cached_champions_full);
+    assert_eq!(items, cached_items);
+    assert_eq!(maps, cached_maps);
+    assert_eq!(mission_assets, cached_mission_assets);
+    assert_eq!(profile_icons, cached_profile_icons);
+    assert_eq!(runes, cached_runes);
+    assert_eq!(spell_buffs, cached_spell_buffs);
+    assert_eq!(summoner_spells, cached_summoner_spells);
+    assert_eq!(translations, cached_translations);
 }
 
 #[cfg(feature = "async")]
@@ -103,4 +111,12 @@ fn async_health_check() {
     assert_eq!(champion, cached_champion);
     assert_eq!(champions, cached_champions);
     assert_eq!(champions_full, cached_champions_full);
+    assert_eq!(items, cached_items);
+    assert_eq!(maps, cached_maps);
+    assert_eq!(mission_assets, cached_mission_assets);
+    assert_eq!(profile_icons, cached_profile_icons);
+    assert_eq!(runes, cached_runes);
+    assert_eq!(spell_buffs, cached_spell_buffs);
+    assert_eq!(summoner_spells, cached_summoner_spells);
+    assert_eq!(translations, cached_translations);
 }
