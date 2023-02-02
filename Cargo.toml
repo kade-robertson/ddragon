@@ -28,8 +28,6 @@ mockito = "0.31.1"
 tokio-test = "0.4.2"
 
 [features]
-default = ["sync", "local-cache"]
-client = ["dep:thiserror", "dep:url"]
-sync = ["client", "dep:ureq"]
-local-cache = ["sync", "dep:cacache-sync"]
-async = ["client", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
+default = ["sync"]
+sync = ["dep:thiserror", "dep:url", "dep:ureq", "dep:cacache-sync"]
+async = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
