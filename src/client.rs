@@ -48,8 +48,10 @@ impl DDragonClient {
     /// else you might want to do)
     ///
     /// ```no_run
+    /// use ddragon::DDragonClient;
+    ///
     /// let agent = ureq::AgentBuilder::new().build();
-    /// let api = DDragonClient::with_agent(agent);
+    /// let api = DDragonClient::with_agent(agent).unwrap();
     /// ```
     pub fn with_agent(agent: ureq::Agent) -> Result<Self, DDragonClientError> {
         #[cfg(not(test))]
@@ -65,7 +67,9 @@ impl DDragonClient {
     /// for any data the client downloads.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// ```
     pub fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
         let agent = ureq::AgentBuilder::new()
@@ -100,7 +104,9 @@ impl DDragonClient {
     /// Returns challenge data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let challenges = api.challenges().unwrap();
     /// ```
     pub fn challenges(&self) -> Result<Challenges, DDragonClientError> {
@@ -113,7 +119,9 @@ impl DDragonClient {
     /// cases (e.x. Wukong's key is MonkeyKing).
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let wukong = api.champion("MonkeyKing").unwrap();
     /// ```
     pub fn champion(&self, key: &str) -> Result<Champion, DDragonClientError> {
@@ -127,7 +135,9 @@ impl DDragonClient {
     /// Returns champion data -- short version.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let champions = api.champions().unwrap();
     /// ```
     pub fn champions(&self) -> Result<Champions, DDragonClientError> {
@@ -137,7 +147,9 @@ impl DDragonClient {
     /// Returns champion data -- complete version.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let champions_full = api.champions_full().unwrap();
     /// ```
     pub fn champions_full(&self) -> Result<ChampionsFull, DDragonClientError> {
@@ -147,7 +159,9 @@ impl DDragonClient {
     /// Returns item data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let items = api.items().unwrap();
     /// ```
     pub fn items(&self) -> Result<Items, DDragonClientError> {
@@ -157,7 +171,9 @@ impl DDragonClient {
     /// Returns map data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let maps = api.maps().unwrap();
     /// ```
     pub fn maps(&self) -> Result<Maps, DDragonClientError> {
@@ -167,8 +183,10 @@ impl DDragonClient {
     /// Returns mission asset data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
-    /// let mission_assets = api.mission_asssets().unwrap();
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let mission_assets = api.mission_assets().unwrap();
     /// ```
     pub fn mission_assets(&self) -> Result<MissionAssets, DDragonClientError> {
         self.get_data::<MissionAssets>("./mission-assets.json")
@@ -177,7 +195,9 @@ impl DDragonClient {
     /// Returns profile icon data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let profile_icons = api.profile_icons().unwrap();
     /// ```
     pub fn profile_icons(&self) -> Result<ProfileIcons, DDragonClientError> {
@@ -187,7 +207,9 @@ impl DDragonClient {
     /// Returns rune data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let runes = api.runes().unwrap();
     /// ```
     pub fn runes(&self) -> Result<Runes, DDragonClientError> {
@@ -197,7 +219,9 @@ impl DDragonClient {
     /// Returns spell buff data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let spell_buffs = api.spell_buffs().unwrap();
     /// ```
     pub fn spell_buffs(&self) -> Result<SpellBuffs, DDragonClientError> {
@@ -207,7 +231,9 @@ impl DDragonClient {
     /// Returns summoner spell data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let summoner_spells = api.summoner_spells().unwrap();
     /// ```
     pub fn summoner_spells(&self) -> Result<SummonerSpells, DDragonClientError> {
@@ -217,7 +243,9 @@ impl DDragonClient {
     /// Returns translation data.
     ///
     /// ```no_run
-    /// let api = DDragonClient::new("./cache");
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
     /// let translations = api.translations().unwrap();
     /// ```
     pub fn translations(&self) -> Result<Translations, DDragonClientError> {
