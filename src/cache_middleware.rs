@@ -1,3 +1,4 @@
+#![cfg_attr(docsrs, doc(cfg(feature = "sync")))]
 #![warn(missing_docs)]
 
 use ureq::{Error, Middleware, MiddlewareNext, Request, Response};

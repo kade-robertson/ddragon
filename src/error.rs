@@ -1,3 +1,5 @@
+#![cfg_attr(docsrs, doc(cfg(any(feature = "sync", feature = "async"))))]
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]
