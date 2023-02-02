@@ -31,3 +31,6 @@ tokio-test = "0.4.2"
 default = ["sync"]
 sync = ["dep:thiserror", "dep:url", "dep:ureq", "dep:cacache-sync"]
 async = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
+
+[package.metadata.docs.rs]
+all-features = true
