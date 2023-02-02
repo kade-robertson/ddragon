@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/kade-robertson/ddragon/compare/v0.4.0...v0.5.0) (2023-02-02)
+
+
+### Features
+
+* derive partialeq and/or eq where applicable ([#28](https://github.com/kade-robertson/ddragon/issues/28)) ([de01faf](https://github.com/kade-robertson/ddragon/commit/de01faf3cb7eb610251ad81e2be8c88fb77e8657))
+
 ## [0.4.0](https://github.com/kade-robertson/ddragon/compare/v0.3.1...v0.4.0) (2023-02-02)
 
 
