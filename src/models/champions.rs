@@ -6,14 +6,14 @@ use super::{
     shared::Image,
 };
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Champions {
     pub format: String,
     pub version: String,
     pub data: HashMap<String, ChampionShort>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct ChampionShort {
     pub version: String,
     pub id: String,

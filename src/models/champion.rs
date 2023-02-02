@@ -10,7 +10,7 @@ pub(crate) struct ChampionWrapper {
     pub data: HashMap<String, Champion>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Champion {
     pub id: String,
     pub key: String,
@@ -30,7 +30,7 @@ pub struct Champion {
     pub passive: Passive,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Info {
     pub attack: i64,
     pub defense: i64,
@@ -38,14 +38,14 @@ pub struct Info {
     pub difficulty: i64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Passive {
     pub name: String,
     pub description: String,
     pub image: Image,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Skin {
     pub id: String,
     pub num: i64,
@@ -53,7 +53,7 @@ pub struct Skin {
     pub chromas: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Spell {
     pub id: String,
     pub name: String,
@@ -80,13 +80,13 @@ pub struct Spell {
     pub resource: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct LevelTip {
     pub label: Vec<String>,
     pub effect: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Tag {
     Assassin,
     Fighter,

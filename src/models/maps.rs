@@ -3,13 +3,13 @@ use std::collections::HashMap;
 
 use super::shared::Image;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Maps {
     pub version: String,
     pub data: HashMap<String, Map>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Map {
     #[serde(rename = "MapName")]
     pub map_name: String,
