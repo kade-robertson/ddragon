@@ -1,3 +1,4 @@
+#![cfg_attr(docsrs, doc(cfg(feature = "async")))]
 #![warn(missing_docs)]
 
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
