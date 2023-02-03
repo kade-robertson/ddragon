@@ -68,6 +68,21 @@ fn health_check() {
     assert_eq!(spell_buffs, cached_spell_buffs);
     assert_eq!(summoner_spells, cached_summoner_spells);
     assert_eq!(translations, cached_translations);
+
+    fn create_image(r: ureq::Response) -> image::DynamicImage {
+        let mut buf: Vec<u8> = Vec::new();
+        r.into_reader().read_to_end(&mut buf).unwrap();
+        image::load_from_memory(&buf).unwrap()
+    }
+
+    assert_eq!(
+        create_image(champion_image),
+        create_image(cached_champion_image)
+    );
+    assert_eq!(
+        create_image(champion_sprite),
+        create_image(cached_champion_sprite)
+    );
 }
 
 #[cfg(feature = "async")]
@@ -143,4 +158,17 @@ fn async_health_check() {
     assert_eq!(spell_buffs, cached_spell_buffs);
     assert_eq!(summoner_spells, cached_summoner_spells);
     assert_eq!(translations, cached_translations);
+
+    fn create_image(r: reqwest::Response) -> image::DynamicImage {
+        image::load_from_memory(&block_on(r.bytes()).unwrap()).unwrap()
+    }
+
+    assert_eq!(
+        create_image(champion_image),
+        create_image(cached_champion_image)
+    );
+    assert_eq!(
+        create_image(champion_sprite),
+        create_image(cached_champion_sprite)
+    );
 }
