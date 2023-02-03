@@ -283,7 +283,7 @@ impl DDragonClient {
     /// You likely want to use this as a reader (via `.into_reader(&mut buffer)`).
     /// Keep in mind that this response will contain a spritesheet image. You
     /// will have to cut out the appropriate piece using the information on
-    /// the [Image].
+    /// the [Image](crate::models::shared::Image).
     ///
     /// ```no_run
     /// use ddragon::DDragonClient;

@@ -12,8 +12,9 @@ use mockito;
 
 use crate::{
     models::{
-        champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
-        MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
+        champion::ChampionWrapper, shared::HasImage, Challenges, Champion, Champions,
+        ChampionsFull, Items, Maps, MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells,
+        Translations,
     },
     DDragonClientError,
 };
@@ -303,6 +304,65 @@ impl AsyncDDragonClient {
     /// ```
     pub async fn translations(&self) -> Result<Translations, DDragonClientError> {
         self.get_data::<Translations>("./language.json").await
+    }
+
+    async fn get_image(&self, path: Url) -> Result<reqwest::Response, DDragonClientError> {
+        self.agent
+            .get(path.as_str())
+            .send()
+            .await
+            .map_err(|e| e.into())
+    }
+
+    /// Returns a `reqwest::Response` from the request to retrieve image data.
+    /// You likely want to use this as a reader or use the content body as bytes.
+    ///
+    /// ```no_run
+    /// # tokio_test::block_on(async {
+    /// use ddragon::AsyncDDragonClient;
+    ///
+    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let champion = api.champion("MonkeyKing").await.unwrap();
+    /// let image = api.image_of(champion).await.unwrap();
+    /// # })
+    /// ```
+    pub async fn image_of<T: HasImage>(
+        &self,
+        item: &T,
+    ) -> Result<reqwest::Response, DDragonClientError> {
+        self.get_image(self.base_url.join(&format!(
+            "/cdn/{}/img/{}",
+            &self.version,
+            item.image_path()
+        ))?)
+        .await
+    }
+
+    /// Returns a `reqwest::Response` from the request to retrieve sprite data.
+    /// You likely want to use this as a reader or use the content body as bytes.
+    /// Keep in mind that this response will contain a spritesheet image. You
+    /// will have to cut out the appropriate piece using the information on
+    /// the [Image](crate::models::shared::Image).
+    ///
+    /// ```no_run
+    /// # tokio_test::block_on(async {
+    /// use ddragon::AsyncDDragonClient;
+    ///
+    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let champion = api.champion("MonkeyKing").await.unwrap();
+    /// let sprite = api.sprite_of(champion).await.unwrap();
+    /// # })
+    /// ```
+    pub async fn sprite_of<T: HasImage>(
+        &self,
+        item: &T,
+    ) -> Result<reqwest::Response, DDragonClientError> {
+        self.get_image(self.base_url.join(&format!(
+            "/cdn/{}/img/{}",
+            &self.version,
+            item.sprite_path()
+        ))?)
+        .await
     }
 }
 
