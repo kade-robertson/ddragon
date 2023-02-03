@@ -9,6 +9,7 @@ use mockito;
 
 use crate::cache_middleware::CacheMiddleware;
 
+use crate::models::shared::HasImage;
 use crate::{
     models::{
         champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
@@ -251,6 +252,52 @@ impl DDragonClient {
     /// ```
     pub fn translations(&self) -> Result<Translations, DDragonClientError> {
         self.get_data::<Translations>("./language.json")
+    }
+
+    fn get_image(&self, path: Url) -> Result<ureq::Response, DDragonClientError> {
+        self.agent
+            .get(path.as_str())
+            .call()
+            .map_err(|e| Box::new(e).into())
+    }
+
+    /// Returns a `ureq::Response` from the request to retrieve image data.
+    /// You likely want to use this as a reader (via `.into_reader(&mut buffer)`).
+    ///
+    /// ```no_run
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let champion = api.champion("MonkeyKing").unwrap();
+    /// let image = api.image_of(champion).unwrap();
+    /// ```
+    pub fn image_of<T: HasImage>(&self, item: &T) -> Result<ureq::Response, DDragonClientError> {
+        self.get_image(self.base_url.join(&format!(
+            "/cdn/{}/img/{}",
+            &self.version,
+            item.image_path()
+        ))?)
+    }
+
+    /// Returns a `ureq::Response` from the request to retrieve sprite data.
+    /// You likely want to use this as a reader (via `.into_reader(&mut buffer)`).
+    /// Keep in mind that this response will contain a spritesheet image. You
+    /// will have to cut out the appropriate piece using the information on
+    /// the [Image].
+    ///
+    /// ```no_run
+    /// use ddragon::DDragonClient;
+    ///
+    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let champion = api.champion("MonkeyKing").unwrap();
+    /// let sprite = api.sprite_of(champion).unwrap();
+    /// ```
+    pub fn sprite_of<T: HasImage>(&self, item: &T) -> Result<ureq::Response, DDragonClientError> {
+        self.get_image(self.base_url.join(&format!(
+            "/cdn/{}/img/{}",
+            &self.version,
+            item.sprite_path()
+        ))?)
     }
 }
 

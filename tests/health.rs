@@ -16,6 +16,8 @@ fn health_check() {
     let uncached_start = Instant::now();
     let challenges = client.challenges().unwrap();
     let champion = client.champion("MonkeyKing").unwrap();
+    let champion_image = client.image_of(&champion).unwrap();
+    let champion_sprite = client.sprite_of(&champion).unwrap();
     let champions = client.champions().unwrap();
     let champions_full = client.champions_full().unwrap();
     let items = client.items().unwrap();
@@ -31,6 +33,8 @@ fn health_check() {
     let cached_start = Instant::now();
     let cached_challenges = client.challenges().unwrap();
     let cached_champion = client.champion("MonkeyKing").unwrap();
+    let cached_champion_image = client.image_of(&cached_champion).unwrap();
+    let cached_champion_sprite = client.sprite_of(&cached_champion).unwrap();
     let cached_champions = client.champions().unwrap();
     let cached_champions_full = client.champions_full().unwrap();
     let cached_items = client.items().unwrap();
@@ -46,6 +50,14 @@ fn health_check() {
     assert!(cached_duration < uncached_duration);
     assert_eq!(challenges, cached_challenges);
     assert_eq!(champion, cached_champion);
+    assert_eq!(
+        champion_image.header("Content-Length"),
+        cached_champion_image.header("Content-Length")
+    );
+    assert_eq!(
+        champion_sprite.header("Content-Length"),
+        cached_champion_sprite.header("Content-Length")
+    );
     assert_eq!(champions, cached_champions);
     assert_eq!(champions_full, cached_champions_full);
     assert_eq!(items, cached_items);

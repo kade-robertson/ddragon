@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use super::{
     champion::{Info, Tag},
-    shared::Image,
+    shared::{has_image, Image},
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -27,3 +27,5 @@ pub struct ChampionShort {
     pub partype: String,
     pub stats: HashMap<String, f64>,
 }
+
+has_image!(ChampionShort);
