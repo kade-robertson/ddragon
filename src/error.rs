@@ -27,6 +27,7 @@ pub enum DDragonClientError {
     #[error("Could not parse JSON data.")]
     /// Indicates a failed attempt at parsing JSON data.
     Parse(#[from] std::io::Error),
+    #[cfg(feature = "image")]
     #[error("Could not parse image data.")]
     /// Indicates that attempting to convert bytes to a [image::DynamicImage]
     /// failed.

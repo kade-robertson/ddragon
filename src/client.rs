@@ -1,9 +1,13 @@
 #![cfg_attr(docsrs, doc(cfg(feature = "sync")))]
 #![warn(missing_docs)]
 
+#[cfg(feature = "image")]
 use image::DynamicImage;
-use serde::de::DeserializeOwned;
+
+#[cfg(feature = "image")]
 use std::io::Read;
+
+use serde::de::DeserializeOwned;
 use url::Url;
 
 #[cfg(test)]
@@ -297,6 +301,7 @@ impl DDragonClient {
         self.get_data::<Translations>("./language.json")
     }
 
+    #[cfg(feature = "image")]
     fn get_image(&self, path: Url) -> Result<DynamicImage, DDragonClientError> {
         let cache_key = path.as_str();
 
@@ -345,6 +350,8 @@ impl DDragonClient {
     /// let champion = api.champion("MonkeyKing").unwrap();
     /// let image = api.image_of(champion).unwrap();
     /// ```
+    #[cfg(feature = "image")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
     pub fn image_of<T: HasImage>(&self, item: &T) -> Result<DynamicImage, DDragonClientError> {
         self.get_image(self.base_url.join(&format!(
             "/cdn/{}/img/{}",
@@ -365,6 +372,8 @@ impl DDragonClient {
     /// let champion = api.champion("MonkeyKing").unwrap();
     /// let sprite = api.sprite_of(champion).unwrap();
     /// ```
+    #[cfg(feature = "image")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
     pub fn sprite_of<T: HasImage>(&self, item: &T) -> Result<DynamicImage, DDragonClientError> {
         self.get_image(self.base_url.join(&format!(
             "/cdn/{}/img/{}",

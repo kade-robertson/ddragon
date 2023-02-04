@@ -1,8 +1,10 @@
 #![cfg_attr(docsrs, doc(cfg(feature = "async")))]
 #![warn(missing_docs)]
 
-use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
+#[cfg(feature = "image")]
 use image::DynamicImage;
+
+use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use serde::de::DeserializeOwned;
@@ -307,6 +309,7 @@ impl AsyncDDragonClient {
         self.get_data::<Translations>("./language.json").await
     }
 
+    #[cfg(feature = "image")]
     async fn get_image(&self, path: Url) -> Result<DynamicImage, DDragonClientError> {
         let response = self
             .agent
@@ -329,6 +332,8 @@ impl AsyncDDragonClient {
     /// let image = api.image_of(champion).await.unwrap();
     /// # })
     /// ```
+    #[cfg(feature = "image")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
     pub async fn image_of<T: HasImage>(
         &self,
         item: &T,
@@ -355,6 +360,8 @@ impl AsyncDDragonClient {
     /// let sprite = api.sprite_of(champion).await.unwrap();
     /// # })
     /// ```
+    #[cfg(feature = "image")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
     pub async fn sprite_of<T: HasImage>(
         &self,
         item: &T,
