@@ -27,4 +27,4 @@ jobs:
           shared-key: 'cache'
 
       - name: Test
-        run: cargo test --all-features -- --test-threads 1
+        run: cargo test --all-features -- --test-threads 1 --nocapture
