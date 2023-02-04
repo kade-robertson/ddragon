@@ -11,6 +11,7 @@ Rust library for accessing the latest LoL patch's ddragon data.
 - Optionally, an asynchronous API can be used that maintains the same featureset
   - Local caching is handled by `http-cache-reqwest` rather than a custom middleware
   - Also accepts custom `reqwest` or `reqwest-middleware` clients
+- Optionally, some useful functions to fetch and decode images, via `image`
 
 ## Usage
 
@@ -46,12 +47,22 @@ The following crate features are available:
   - Provides the `ddragon::async_client` module.
   - Provides the re-exported `ddragon::AsyncDDragonClient` client.
   - Adds `reqwest` with the `json` feature, `reqwest-middleware` and `http-cache-reqwest` as dependencies.
+- `image` enables image fetching and caching.
+  - Both clients will receive `image_of` and `sprite_of` for any model which implements `HasImage`.
+  - Adds the `image` dependency.
 
 To use the library with just the synchronous version, it should be as simple as adding any other dependency:
 
 ```toml
 [dependencies]
 ddragon = "<version>"
+```
+
+If you would also like to have the image fetching support, use:
+
+```toml
+[dependencies]
+ddragon = { version = "<version>", features = ["image"] }
 ```
 
 If you want the asynchronous client only, you probably don't want to pull in the dependencies related to the synchronous code, so you can do this:
@@ -72,6 +83,6 @@ ddragon = { version = "<version>", default-features = false }
 
 - [x] Support all `.json` endpoints related to League of Legends
 - [ ] Support endpoints related to Teamfight Tactics
-- [ ] Add additional helpers for obtaining image assets
+- [x] Add additional helpers for obtaining image assets
 - [x] Add an async API using `reqwest` as the backend
 - [ ] Improve docs
