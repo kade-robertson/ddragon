@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.0](https://github.com/kade-robertson/ddragon/compare/v0.5.0...v0.6.0) (2023-02-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* correctly name profile icon struct
+
+### Features
+
+* support fetching images and sprites ([#32](https://github.com/kade-robertson/ddragon/issues/32)) ([acc6b0f](https://github.com/kade-robertson/ddragon/commit/acc6b0fb756985b6acf096f91c6bc8c6175f9633))
+
+
+### Bug Fixes
+
+* correctly name profile icon struct ([60f3dd6](https://github.com/kade-robertson/ddragon/commit/60f3dd61c42686e1eb8ac63cde75c2c419892ee3))
+
 ## [0.5.0](https://github.com/kade-robertson/ddragon/compare/v0.4.0...v0.5.0) (2023-02-02)
 
 
