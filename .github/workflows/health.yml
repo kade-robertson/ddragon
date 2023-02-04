@@ -22,11 +22,18 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
 
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
+      - name: Cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
         with:
-          prefix-key: 'rust'
-          shared-key: 'cache'
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/            
+          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
 
       - name: Health Check
         run: cargo test --all-features -- --test health --test-threads 1 --nocapture
