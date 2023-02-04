@@ -10,12 +10,13 @@ fn health_check() {
     let tempdir = temp_dir().join("ddragon-cache");
     let _ = remove_dir_all(&tempdir);
 
-    eprintln!("Using {} for cache.", tempdir.to_string_lossy());
     let client = DDragonClient::new(tempdir.as_os_str().to_str().unwrap()).unwrap();
 
     let uncached_start = Instant::now();
     let challenges = client.challenges().unwrap();
     let champion = client.champion("MonkeyKing").unwrap();
+    let champion_image = client.image_of(&champion).unwrap();
+    let champion_sprite = client.sprite_of(&champion).unwrap();
     let champions = client.champions().unwrap();
     let champions_full = client.champions_full().unwrap();
     let items = client.items().unwrap();
@@ -31,6 +32,8 @@ fn health_check() {
     let cached_start = Instant::now();
     let cached_challenges = client.challenges().unwrap();
     let cached_champion = client.champion("MonkeyKing").unwrap();
+    let cached_champion_image = client.image_of(&cached_champion).unwrap();
+    let cached_champion_sprite = client.sprite_of(&cached_champion).unwrap();
     let cached_champions = client.champions().unwrap();
     let cached_champions_full = client.champions_full().unwrap();
     let cached_items = client.items().unwrap();
@@ -43,9 +46,15 @@ fn health_check() {
     let cached_translations = client.translations().unwrap();
     let cached_duration = cached_start.elapsed();
 
+    println!();
+    dbg!(uncached_duration);
+    dbg!(cached_duration);
+
     assert!(cached_duration < uncached_duration);
     assert_eq!(challenges, cached_challenges);
     assert_eq!(champion, cached_champion);
+    assert_eq!(champion_image, cached_champion_image);
+    assert_eq!(champion_sprite, cached_champion_sprite);
     assert_eq!(champions, cached_champions);
     assert_eq!(champions_full, cached_champions_full);
     assert_eq!(items, cached_items);
@@ -70,7 +79,6 @@ fn async_health_check() {
     let tempdir = temp_dir().join("ddragon-async-cache");
     let _ = remove_dir_all(&tempdir);
 
-    eprintln!("Using {} for cache.", tempdir.to_string_lossy());
     let client = block_on(AsyncDDragonClient::new(
         tempdir.as_os_str().to_str().unwrap(),
     ))
@@ -79,6 +87,8 @@ fn async_health_check() {
     let uncached_start = Instant::now();
     let challenges = block_on(client.challenges()).unwrap();
     let champion = block_on(client.champion("MonkeyKing")).unwrap();
+    let champion_image = block_on(client.image_of(&champion)).unwrap();
+    let champion_sprite = block_on(client.sprite_of(&champion)).unwrap();
     let champions = block_on(client.champions()).unwrap();
     let champions_full = block_on(client.champions_full()).unwrap();
     let items = block_on(client.items()).unwrap();
@@ -94,6 +104,8 @@ fn async_health_check() {
     let cached_start = Instant::now();
     let cached_challenges = block_on(client.challenges()).unwrap();
     let cached_champion = block_on(client.champion("MonkeyKing")).unwrap();
+    let cached_champion_image = block_on(client.image_of(&cached_champion)).unwrap();
+    let cached_champion_sprite = block_on(client.sprite_of(&cached_champion)).unwrap();
     let cached_champions = block_on(client.champions()).unwrap();
     let cached_champions_full = block_on(client.champions_full()).unwrap();
     let cached_items = block_on(client.items()).unwrap();
@@ -106,9 +118,15 @@ fn async_health_check() {
     let cached_translations = block_on(client.translations()).unwrap();
     let cached_duration = cached_start.elapsed();
 
+    println!();
+    dbg!(uncached_duration);
+    dbg!(cached_duration);
+
     assert!(cached_duration < uncached_duration);
     assert_eq!(challenges, cached_challenges);
     assert_eq!(champion, cached_champion);
+    assert_eq!(champion_image, cached_champion_image);
+    assert_eq!(champion_sprite, cached_champion_sprite);
     assert_eq!(champions, cached_champions);
     assert_eq!(champions_full, cached_champions_full);
     assert_eq!(items, cached_items);

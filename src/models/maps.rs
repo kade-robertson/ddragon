@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::shared::Image;
+use super::shared::{has_image, Image};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Maps {
@@ -17,3 +17,5 @@ pub struct Map {
     pub map_id: String,
     pub image: Image,
 }
+
+has_image!(Map);

@@ -1,6 +1,9 @@
 #![cfg_attr(docsrs, doc(cfg(feature = "async")))]
 #![warn(missing_docs)]
 
+#[cfg(feature = "image")]
+use image::DynamicImage;
+
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
@@ -12,8 +15,9 @@ use mockito;
 
 use crate::{
     models::{
-        champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
-        MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
+        champion::ChampionWrapper, shared::HasImage, Challenges, Champion, Champions,
+        ChampionsFull, Items, Maps, MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells,
+        Translations,
     },
     DDragonClientError,
 };
@@ -303,6 +307,71 @@ impl AsyncDDragonClient {
     /// ```
     pub async fn translations(&self) -> Result<Translations, DDragonClientError> {
         self.get_data::<Translations>("./language.json").await
+    }
+
+    #[cfg(feature = "image")]
+    async fn get_image(&self, path: Url) -> Result<DynamicImage, DDragonClientError> {
+        let response = self
+            .agent
+            .get(path.as_str())
+            .send()
+            .await
+            .map_err(std::convert::Into::<DDragonClientError>::into)?;
+
+        image::load_from_memory(&response.bytes().await?).map_err(|e| e.into())
+    }
+
+    /// Returns an [image::DynamicImage].
+    ///
+    /// ```no_run
+    /// # tokio_test::block_on(async {
+    /// use ddragon::AsyncDDragonClient;
+    ///
+    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let champion = api.champion("MonkeyKing").await.unwrap();
+    /// let image = api.image_of(&champion).await.unwrap();
+    /// # })
+    /// ```
+    #[cfg(feature = "image")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
+    pub async fn image_of<T: HasImage>(
+        &self,
+        item: &T,
+    ) -> Result<DynamicImage, DDragonClientError> {
+        self.get_image(self.base_url.join(&format!(
+            "/cdn/{}/img/{}",
+            &self.version,
+            item.image_path()
+        ))?)
+        .await
+    }
+
+    /// Returns an [image::DynamicImage].
+    ///
+    /// Keep in mind that this is a spritesheet image. You will have to cut out
+    /// the appropriate piece using the information on the [Image](crate::models::shared::Image).
+    ///
+    /// ```no_run
+    /// # tokio_test::block_on(async {
+    /// use ddragon::AsyncDDragonClient;
+    ///
+    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let champion = api.champion("MonkeyKing").await.unwrap();
+    /// let sprite = api.sprite_of(&champion).await.unwrap();
+    /// # })
+    /// ```
+    #[cfg(feature = "image")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
+    pub async fn sprite_of<T: HasImage>(
+        &self,
+        item: &T,
+    ) -> Result<DynamicImage, DDragonClientError> {
+        self.get_image(self.base_url.join(&format!(
+            "/cdn/{}/img/{}",
+            &self.version,
+            item.sprite_path()
+        ))?)
+        .await
     }
 }
 

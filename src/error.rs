@@ -27,6 +27,11 @@ pub enum DDragonClientError {
     #[error("Could not parse JSON data.")]
     /// Indicates a failed attempt at parsing JSON data.
     Parse(#[from] std::io::Error),
+    #[cfg(feature = "image")]
+    #[error("Could not parse image data.")]
+    /// Indicates that attempting to convert bytes to a [image::DynamicImage]
+    /// failed.
+    Image(#[from] image::ImageError),
     #[error("Could not find the latest API version.")]
     /// Indicates during instantiation that the version lists provided by the
     /// ddragon API was empty.

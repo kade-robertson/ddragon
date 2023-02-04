@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::shared::Image;
+use super::shared::{has_image, Image};
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct ChampionWrapper {
@@ -30,6 +30,8 @@ pub struct Champion {
     pub passive: Passive,
 }
 
+has_image!(Champion);
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Info {
     pub attack: i64,
@@ -44,6 +46,8 @@ pub struct Passive {
     pub description: String,
     pub image: Image,
 }
+
+has_image!(Passive);
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Skin {
@@ -79,6 +83,8 @@ pub struct Spell {
     pub image: Image,
     pub resource: Option<String>,
 }
+
+has_image!(Spell);
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct LevelTip {

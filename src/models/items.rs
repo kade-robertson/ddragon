@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::shared::Image;
+use super::shared::{has_image, Image};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Items {
@@ -49,6 +49,8 @@ pub struct Item {
     #[serde(rename = "specialRecipe")]
     pub special_recipe: Option<i64>,
 }
+
+has_image!(Item);
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Effect {

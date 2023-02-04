@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::shared::Image;
+use super::shared::{has_image, Image};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct SummonerSpells {
@@ -38,3 +38,5 @@ pub struct SummonerSpell {
     pub image: Image,
     pub resource: Option<String>,
 }
+
+has_image!(SummonerSpell);
