@@ -21,6 +21,13 @@ impl CacheMiddleware {
 
 impl Middleware for CacheMiddleware {
     fn handle(&self, request: Request, next: MiddlewareNext) -> Result<Response, Error> {
+        // Images have to bypass this middleware entirely because you cannot
+        // properly encode/decode as UTF-8. Caching is handled in the client's
+        // get_image() function instead.
+        if request.url().ends_with(".png") {
+            return next.handle(request);
+        }
+
         let cache_key = request.url().to_owned();
 
         if let Ok(data) = cacache_sync::read(&self.directory, &cache_key) {

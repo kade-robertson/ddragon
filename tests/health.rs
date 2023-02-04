@@ -10,7 +10,6 @@ fn health_check() {
     let tempdir = temp_dir().join("ddragon-cache");
     let _ = remove_dir_all(&tempdir);
 
-    eprintln!("Using {} for cache.", tempdir.to_string_lossy());
     let client = DDragonClient::new(tempdir.as_os_str().to_str().unwrap()).unwrap();
 
     let uncached_start = Instant::now();
@@ -47,17 +46,15 @@ fn health_check() {
     let cached_translations = client.translations().unwrap();
     let cached_duration = cached_start.elapsed();
 
+    println!();
+    dbg!(uncached_duration);
+    dbg!(cached_duration);
+
     assert!(cached_duration < uncached_duration);
     assert_eq!(challenges, cached_challenges);
     assert_eq!(champion, cached_champion);
-    assert_eq!(
-        champion_image.header("Content-Length"),
-        cached_champion_image.header("Content-Length")
-    );
-    assert_eq!(
-        champion_sprite.header("Content-Length"),
-        cached_champion_sprite.header("Content-Length")
-    );
+    assert_eq!(champion_image, cached_champion_image);
+    assert_eq!(champion_sprite, cached_champion_sprite);
     assert_eq!(champions, cached_champions);
     assert_eq!(champions_full, cached_champions_full);
     assert_eq!(items, cached_items);
@@ -68,21 +65,6 @@ fn health_check() {
     assert_eq!(spell_buffs, cached_spell_buffs);
     assert_eq!(summoner_spells, cached_summoner_spells);
     assert_eq!(translations, cached_translations);
-
-    fn create_image(r: ureq::Response) -> image::DynamicImage {
-        let mut buf: Vec<u8> = Vec::new();
-        r.into_reader().read_to_end(&mut buf).unwrap();
-        image::load_from_memory(&buf).unwrap()
-    }
-
-    assert_eq!(
-        create_image(champion_image),
-        create_image(cached_champion_image)
-    );
-    assert_eq!(
-        create_image(champion_sprite),
-        create_image(cached_champion_sprite)
-    );
 }
 
 #[cfg(feature = "async")]
@@ -97,7 +79,6 @@ fn async_health_check() {
     let tempdir = temp_dir().join("ddragon-async-cache");
     let _ = remove_dir_all(&tempdir);
 
-    eprintln!("Using {} for cache.", tempdir.to_string_lossy());
     let client = block_on(AsyncDDragonClient::new(
         tempdir.as_os_str().to_str().unwrap(),
     ))
@@ -137,17 +118,15 @@ fn async_health_check() {
     let cached_translations = block_on(client.translations()).unwrap();
     let cached_duration = cached_start.elapsed();
 
+    println!();
+    dbg!(uncached_duration);
+    dbg!(cached_duration);
+
     assert!(cached_duration < uncached_duration);
     assert_eq!(challenges, cached_challenges);
     assert_eq!(champion, cached_champion);
-    assert_eq!(
-        champion_image.content_length(),
-        cached_champion_image.content_length()
-    );
-    assert_eq!(
-        champion_sprite.content_length(),
-        cached_champion_sprite.content_length()
-    );
+    assert_eq!(champion_image, cached_champion_image);
+    assert_eq!(champion_sprite, cached_champion_sprite);
     assert_eq!(champions, cached_champions);
     assert_eq!(champions_full, cached_champions_full);
     assert_eq!(items, cached_items);
@@ -158,17 +137,4 @@ fn async_health_check() {
     assert_eq!(spell_buffs, cached_spell_buffs);
     assert_eq!(summoner_spells, cached_summoner_spells);
     assert_eq!(translations, cached_translations);
-
-    fn create_image(r: reqwest::Response) -> image::DynamicImage {
-        image::load_from_memory(&block_on(r.bytes()).unwrap()).unwrap()
-    }
-
-    assert_eq!(
-        create_image(champion_image),
-        create_image(cached_champion_image)
-    );
-    assert_eq!(
-        create_image(champion_sprite),
-        create_image(cached_champion_sprite)
-    );
 }

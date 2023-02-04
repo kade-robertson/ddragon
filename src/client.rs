@@ -1,7 +1,9 @@
 #![cfg_attr(docsrs, doc(cfg(feature = "sync")))]
 #![warn(missing_docs)]
 
+use image::DynamicImage;
 use serde::de::DeserializeOwned;
+use std::io::Read;
 use url::Url;
 
 #[cfg(test)]
@@ -24,10 +26,15 @@ pub struct DDragonClient {
     /// The current version of the API data reported back to us from the API.
     pub version: String,
     base_url: Url,
+    cache_directory: Option<String>,
 }
 
 impl DDragonClient {
-    fn create(agent: ureq::Agent, base_url: Url) -> Result<Self, DDragonClientError> {
+    fn create(
+        agent: ureq::Agent,
+        base_url: Url,
+        cache_directory: Option<String>,
+    ) -> Result<Self, DDragonClientError> {
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
             .call()
@@ -42,12 +49,21 @@ impl DDragonClient {
             agent,
             version: latest_version.to_owned(),
             base_url,
+            cache_directory,
         })
     }
 
     /// Creates a new client using a provided agent, in case you may want to
     /// customize the agent behaviour with additional middlewares (or anything
-    /// else you might want to do)
+    /// else you might want to do).
+    ///
+    /// <p style="background:rgba(255,181,77,0.16);padding:0.75em;">
+    /// <strong>Warning:</strong> This effectively turns off all automatically
+    /// provided caching, for both images and text. [CacheMiddleware] is not
+    /// able to cache images effectively because [ureq::Agent] does not support
+    /// creating custom responses with non-string bodies at the moment.
+    /// [with_agent_and_cache] is preferred and enables image caching.
+    /// </p>
     ///
     /// ```no_run
     /// use ddragon::DDragonClient;
@@ -62,7 +78,34 @@ impl DDragonClient {
         #[cfg(test)]
         let base_url = mockito::server_url();
 
-        Self::create(agent, Url::parse(&base_url)?)
+        Self::create(agent, Url::parse(&base_url)?, None)
+    }
+
+    /// Creates a new client using a provided agent, in case you may want to
+    /// customize the agent behaviour with additional middlewares (or anything
+    /// else you might want to do).
+    ///
+    /// ```no_run
+    /// use ddragon::DDragonClient;
+    ///
+    /// let agent = ureq::AgentBuilder::new().build();
+    /// let api = DDragonClient::with_agent_and_cache(agent, "./cache").unwrap();
+    /// ```
+    pub fn with_agent_and_cache(
+        agent: ureq::Agent,
+        cache_directory: &str,
+    ) -> Result<Self, DDragonClientError> {
+        #[cfg(not(test))]
+        let base_url = "https://ddragon.leagueoflegends.com".to_owned();
+
+        #[cfg(test)]
+        let base_url = mockito::server_url();
+
+        Self::create(
+            agent,
+            Url::parse(&base_url)?,
+            Some(cache_directory.to_owned()),
+        )
     }
 
     /// Creates a new client with the specified directory as the caching location
@@ -77,7 +120,7 @@ impl DDragonClient {
         let agent = ureq::AgentBuilder::new()
             .middleware(CacheMiddleware::new(cache_dir))
             .build();
-        Self::with_agent(agent)
+        Self::with_agent_and_cache(agent, cache_dir)
     }
 
     #[cfg(test)]
@@ -254,15 +297,46 @@ impl DDragonClient {
         self.get_data::<Translations>("./language.json")
     }
 
-    fn get_image(&self, path: Url) -> Result<ureq::Response, DDragonClientError> {
-        self.agent
-            .get(path.as_str())
+    fn get_image(&self, path: Url) -> Result<DynamicImage, DDragonClientError> {
+        let cache_key = path.as_str();
+
+        if let Some(cache_dir) = &self.cache_directory {
+            if let Ok(image_data) = cacache_sync::read(cache_dir, cache_key) {
+                return image::load_from_memory(&image_data).map_err(|e| e.into());
+            }
+        }
+
+        let response = self
+            .agent
+            .get(cache_key)
             .call()
-            .map_err(|e| Box::new(e).into())
+            .map_err(|e| std::convert::Into::<DDragonClientError>::into(Box::new(e)))?;
+
+        // We don't want to assume we can just read_to_end cleanly, so ideally
+        // we get a header telling us how many bytes we can read. If we can't,
+        // using 1 as a default means parsing will always fail and produce an
+        // error that can be handled elsewhere.
+        let image_size_bytes = response
+            .header("Content-Length")
+            .unwrap_or("1")
+            .parse::<u64>()
+            .unwrap_or(1);
+
+        let mut image_buffer: Vec<u8> = vec![];
+        response
+            .into_reader()
+            .take(image_size_bytes)
+            .read_to_end(&mut image_buffer)?;
+        let image_result = image::load_from_memory(&image_buffer).map_err(|e| e.into());
+
+        if let Some(cache_dir) = &self.cache_directory {
+            let _ = cacache_sync::write(cache_dir, cache_key, image_buffer);
+        }
+
+        image_result
     }
 
-    /// Returns a `ureq::Response` from the request to retrieve image data.
-    /// You likely want to use this as a reader (via `.into_reader(&mut buffer)`).
+    /// Returns an [image::DynamicImage].
     ///
     /// ```no_run
     /// use ddragon::DDragonClient;
@@ -271,7 +345,7 @@ impl DDragonClient {
     /// let champion = api.champion("MonkeyKing").unwrap();
     /// let image = api.image_of(champion).unwrap();
     /// ```
-    pub fn image_of<T: HasImage>(&self, item: &T) -> Result<ureq::Response, DDragonClientError> {
+    pub fn image_of<T: HasImage>(&self, item: &T) -> Result<DynamicImage, DDragonClientError> {
         self.get_image(self.base_url.join(&format!(
             "/cdn/{}/img/{}",
             &self.version,
@@ -279,11 +353,10 @@ impl DDragonClient {
         ))?)
     }
 
-    /// Returns a `ureq::Response` from the request to retrieve sprite data.
-    /// You likely want to use this as a reader (via `.into_reader(&mut buffer)`).
-    /// Keep in mind that this response will contain a spritesheet image. You
-    /// will have to cut out the appropriate piece using the information on
-    /// the [Image](crate::models::shared::Image).
+    /// Returns an [image::DynamicImage].
+    ///
+    /// Keep in mind that this is a spritesheet image. You will have to cut out
+    /// the appropriate piece using the information on the [Image](crate::models::shared::Image).
     ///
     /// ```no_run
     /// use ddragon::DDragonClient;
@@ -292,7 +365,7 @@ impl DDragonClient {
     /// let champion = api.champion("MonkeyKing").unwrap();
     /// let sprite = api.sprite_of(champion).unwrap();
     /// ```
-    pub fn sprite_of<T: HasImage>(&self, item: &T) -> Result<ureq::Response, DDragonClientError> {
+    pub fn sprite_of<T: HasImage>(&self, item: &T) -> Result<DynamicImage, DDragonClientError> {
         self.get_image(self.base_url.join(&format!(
             "/cdn/{}/img/{}",
             &self.version,
@@ -312,6 +385,7 @@ mod test {
                 agent: ureq::Agent::new(),
                 version: "0.0.0".to_owned(),
                 base_url: Url::parse(&mockito::server_url()).unwrap(),
+                cache_directory: None,
             }
         }
     }

@@ -13,6 +13,7 @@ categories = ["api-bindings"]
 [dependencies]
 cacache-sync = { version = "11.0.0", optional = true }
 http-cache-reqwest = { version = "0.5.2", optional = true }
+image = "0.24.5"
 reqwest = { version = "0.11", features = ["json"], optional = true }
 reqwest-middleware = { version = "0.2.0", optional = true }
 serde = { version = "1.0.152", features = ["derive"] }
@@ -21,7 +22,6 @@ ureq = { version = "2.6.2", features = ["json"], optional = true }
 url = { version = "2.3.1", optional = true }
 
 [dev-dependencies]
-image = "0.24.5"
 mockito = "0.31.1"
 tokio-test = "0.4.2"
 

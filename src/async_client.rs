@@ -2,6 +2,7 @@
 #![warn(missing_docs)]
 
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
+use image::DynamicImage;
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use serde::de::DeserializeOwned;
@@ -306,16 +307,18 @@ impl AsyncDDragonClient {
         self.get_data::<Translations>("./language.json").await
     }
 
-    async fn get_image(&self, path: Url) -> Result<reqwest::Response, DDragonClientError> {
-        self.agent
+    async fn get_image(&self, path: Url) -> Result<DynamicImage, DDragonClientError> {
+        let response = self
+            .agent
             .get(path.as_str())
             .send()
             .await
-            .map_err(|e| e.into())
+            .map_err(std::convert::Into::<DDragonClientError>::into)?;
+
+        image::load_from_memory(&response.bytes().await?).map_err(|e| e.into())
     }
 
-    /// Returns a `reqwest::Response` from the request to retrieve image data.
-    /// You likely want to use this as a reader or use the content body as bytes.
+    /// Returns an [image::DynamicImage].
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
@@ -329,7 +332,7 @@ impl AsyncDDragonClient {
     pub async fn image_of<T: HasImage>(
         &self,
         item: &T,
-    ) -> Result<reqwest::Response, DDragonClientError> {
+    ) -> Result<DynamicImage, DDragonClientError> {
         self.get_image(self.base_url.join(&format!(
             "/cdn/{}/img/{}",
             &self.version,
@@ -338,11 +341,10 @@ impl AsyncDDragonClient {
         .await
     }
 
-    /// Returns a `reqwest::Response` from the request to retrieve sprite data.
-    /// You likely want to use this as a reader or use the content body as bytes.
-    /// Keep in mind that this response will contain a spritesheet image. You
-    /// will have to cut out the appropriate piece using the information on
-    /// the [Image](crate::models::shared::Image).
+    /// Returns an [image::DynamicImage].
+    ///
+    /// Keep in mind that this is a spritesheet image. You will have to cut out
+    /// the appropriate piece using the information on the [Image](crate::models::shared::Image).
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
@@ -356,7 +358,7 @@ impl AsyncDDragonClient {
     pub async fn sprite_of<T: HasImage>(
         &self,
         item: &T,
-    ) -> Result<reqwest::Response, DDragonClientError> {
+    ) -> Result<DynamicImage, DDragonClientError> {
         self.get_image(self.base_url.join(&format!(
             "/cdn/{}/img/{}",
             &self.version,
