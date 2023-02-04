@@ -329,7 +329,7 @@ impl AsyncDDragonClient {
     ///
     /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
     /// let champion = api.champion("MonkeyKing").await.unwrap();
-    /// let image = api.image_of(champion).await.unwrap();
+    /// let image = api.image_of(&champion).await.unwrap();
     /// # })
     /// ```
     #[cfg(feature = "image")]
@@ -357,7 +357,7 @@ impl AsyncDDragonClient {
     ///
     /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
     /// let champion = api.champion("MonkeyKing").await.unwrap();
-    /// let sprite = api.sprite_of(champion).await.unwrap();
+    /// let sprite = api.sprite_of(&champion).await.unwrap();
     /// # })
     /// ```
     #[cfg(feature = "image")]

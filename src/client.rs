@@ -348,7 +348,7 @@ impl DDragonClient {
     ///
     /// let api = DDragonClient::new("./cache").unwrap();
     /// let champion = api.champion("MonkeyKing").unwrap();
-    /// let image = api.image_of(champion).unwrap();
+    /// let image = api.image_of(&champion).unwrap();
     /// ```
     #[cfg(feature = "image")]
     #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
@@ -370,7 +370,7 @@ impl DDragonClient {
     ///
     /// let api = DDragonClient::new("./cache").unwrap();
     /// let champion = api.champion("MonkeyKing").unwrap();
-    /// let sprite = api.sprite_of(champion).unwrap();
+    /// let sprite = api.sprite_of(&champion).unwrap();
     /// ```
     #[cfg(feature = "image")]
     #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
