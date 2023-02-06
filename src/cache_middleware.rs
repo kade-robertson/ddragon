@@ -24,7 +24,9 @@ impl Middleware for CacheMiddleware {
         // Images have to bypass this middleware entirely because you cannot
         // properly encode/decode as UTF-8. Caching is handled in the client's
         // get_image() function instead.
-        if request.url().ends_with(".png") {
+        //
+        // Also, we don't want to cache the version list.
+        if request.url().ends_with(".png") || request.url().ends_with("/api/versions.json") {
             return next.handle(request);
         }
 

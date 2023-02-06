@@ -21,9 +21,15 @@ pub mod client;
 #[cfg(feature = "sync")]
 pub use client::Client;
 
+#[cfg(feature = "sync")]
+pub use client::ClientBuilder;
+
 #[cfg(feature = "async")]
 /// Contains the async version of the client API.
 pub mod async_client;
 
 #[cfg(feature = "async")]
 pub use async_client::AsyncClient;
+
+#[cfg(feature = "async")]
+pub use async_client::AsyncClientBuilder;

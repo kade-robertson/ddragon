@@ -16,7 +16,7 @@ Rust library for accessing the latest LoL patch's ddragon data.
 ## Usage
 
 ```rust
-use ddragon::{cache_middleware::CacheMiddleware, Client, ClientError};
+use ddragon::{cache_middleware::CacheMiddleware, Client, ClientBuilder, ClientError};
 
 fn main() -> Result<(), ClientError> {
     let client = Client::new("/path/to/your/cache/dir")?;
@@ -25,7 +25,7 @@ fn main() -> Result<(), ClientError> {
     let my_agent = ureq::AgentBuilder::new()
         .middleware(CacheMiddleware::new("/path/to/your/cache/dir"))
         .build();
-    let client = Client::with_agent(my_agent)?;
+    let client = ClientBuilder::new().agent(my_agent).build()?;
 
     // See available options on the client and in the models folder.
     let champions = client.champions()?;
@@ -41,11 +41,11 @@ The following crate features are available:
 
 - `sync` (on by default) enables the synchronous client.
   - Provides the `ddragon::client` and `ddragon::cache_middleware` module.
-  - Provides the re-exported `ddragon::Client` client.
+  - Provides the re-exported `ddragon::Client` and `ddragon::ClientBuilder` impls.
   - Adds `cacache-sync`, `url`, `thiserror`, and `ureq` with the `json` feature enabled as dependencies.
 - `async` enables the asynchronous client.
   - Provides the `ddragon::async_client` module.
-  - Provides the re-exported `ddragon::AsyncClient` client.
+  - Provides the re-exported `ddragon::AsyncClient` and `ddragon::AsyncClientBuilder` impls.
   - Adds `reqwest` with the `json` feature, `reqwest-middleware` and `http-cache-reqwest` as dependencies.
 - `image` enables image fetching and caching.
   - Both clients will receive `image_of` and `sprite_of` for any model which implements `HasImage`.
