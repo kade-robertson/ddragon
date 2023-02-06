@@ -26,6 +26,114 @@ use crate::{
     ClientError,
 };
 
+/// Used for building a [Client] with custom options.
+pub struct ClientBuilder {
+    agent: Option<Agent>,
+    cache: Option<String>,
+}
+
+///
+/// # Examples
+///
+/// Using a new agent with no caching.
+///
+/// ```no_run
+/// use ddragon::ClientBuilder;
+///
+/// let client = ClientBuilder::new().build().unwrap();
+/// ````
+///
+/// Using a provided agent, with no caching (unless you provide an agent with
+/// its own caching middleware).
+///
+/// ```no_run
+/// use ureq::Agent;
+/// use ddragon::ClientBuilder;
+///
+/// let agent = Agent::new();
+/// let client = ClientBuilder::new().agent(agent).build().unwrap();
+/// ````
+///
+/// Using a new agent with full caching.
+///
+/// ```no_run
+/// use ddragon::ClientBuilder;
+///
+/// let client = ClientBuilder::new().cache("./cache").build().unwrap();
+/// ````
+impl ClientBuilder {
+    /// Creates a [ClientBuilder] with no default options set.
+    pub fn new() -> Self {
+        Self {
+            agent: None,
+            cache: None,
+        }
+    }
+
+    /// Configures a custom [Agent] for making network requests.
+    pub fn agent(mut self, agent: Agent) -> Self {
+        self.agent = Some(agent);
+        self
+    }
+
+    /// Configures the cache directory to use for anything that gets downlaoded.
+    pub fn cache(mut self, cache_dir: &str) -> Self {
+        self.cache = Some(cache_dir.to_owned());
+        self
+    }
+
+    /// Creates a new [Client] instance with the configured options.
+    ///
+    /// # Notes
+    ///
+    /// - If a custom agent is specified, you must configure it with the
+    /// [CacheMiddleware] middleware also provided by this crate, or you will
+    /// not retain any caching behaviour.
+    /// - If a custom agent is specified, not specifying a cache directory will
+    /// result in images not being cached if you are using the `image` feature.
+    pub fn build(self) -> Result<Client, ClientError> {
+        let agent = match self.agent {
+            Some(a) => a,
+            None => match self.cache.clone() {
+                Some(dir) => AgentBuilder::new()
+                    .middleware(CacheMiddleware::new(&dir))
+                    .build(),
+                None => Agent::new(),
+            },
+        };
+
+        #[cfg(not(test))]
+        let base_url = Url::parse("https://ddragon.leagueoflegends.com")?;
+
+        #[cfg(test)]
+        let base_url = Url::parse(&mockito::server_url())?;
+
+        let version_list = agent
+            .get(base_url.join("/api/versions.json")?.as_str())
+            .call()
+            .map_err(Box::new)?
+            .into_json::<Vec<String>>()?;
+
+        let latest_version = version_list
+            .get(0)
+            .ok_or(ClientError::NoLatestVersion)?
+            .to_owned();
+
+        Ok(Client {
+            agent,
+            version: latest_version,
+            base_url,
+            cache_directory: self.cache,
+        })
+    }
+}
+
+impl Default for ClientBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Clone)]
 /// Provides access to the ddragon API.
 pub struct Client {
@@ -37,27 +145,7 @@ pub struct Client {
 }
 
 impl Client {
-    fn create(
-        agent: Agent,
-        base_url: Url,
-        cache_directory: Option<String>,
-    ) -> Result<Self, ClientError> {
-        let version_list = agent
-            .get(base_url.join("/api/versions.json")?.as_str())
-            .call()
-            .map_err(Box::new)?
-            .into_json::<Vec<String>>()?;
-
-        let latest_version = version_list.get(0).ok_or(ClientError::NoLatestVersion)?;
-
-        Ok(Client {
-            agent,
-            version: latest_version.to_owned(),
-            base_url,
-            cache_directory,
-        })
-    }
-
+    #[deprecated(note = "Use `ClientBuilder::new().agent(agent).build()` instead.")]
     /// Creates a new client using a provided agent, in case you may want to
     /// customize the agent behaviour with additional middlewares (or anything
     /// else you might want to do).
@@ -77,15 +165,12 @@ impl Client {
     /// let api = Client::with_agent(agent).unwrap();
     /// ```
     pub fn with_agent(agent: Agent) -> Result<Self, ClientError> {
-        #[cfg(not(test))]
-        let base_url = "https://ddragon.leagueoflegends.com".to_owned();
-
-        #[cfg(test)]
-        let base_url = mockito::server_url();
-
-        Self::create(agent, Url::parse(&base_url)?, None)
+        ClientBuilder::new().agent(agent).build()
     }
 
+    #[deprecated(
+        note = "Use `ClientBuilder::new().agent(agent).cache_directory(dir).build()` instead."
+    )]
     /// Creates a new client using a provided agent, in case you may want to
     /// customize the agent behaviour with additional middlewares (or anything
     /// else you might want to do).
@@ -97,17 +182,10 @@ impl Client {
     /// let api = Client::with_agent_and_cache(agent, "./cache").unwrap();
     /// ```
     pub fn with_agent_and_cache(agent: Agent, cache_directory: &str) -> Result<Self, ClientError> {
-        #[cfg(not(test))]
-        let base_url = "https://ddragon.leagueoflegends.com".to_owned();
-
-        #[cfg(test)]
-        let base_url = mockito::server_url();
-
-        Self::create(
-            agent,
-            Url::parse(&base_url)?,
-            Some(cache_directory.to_owned()),
-        )
+        ClientBuilder::new()
+            .agent(agent)
+            .cache(cache_directory)
+            .build()
     }
 
     /// Creates a new client with the specified directory as the caching location
@@ -119,16 +197,12 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// ```
     pub fn new(cache_dir: &str) -> Result<Self, ClientError> {
-        let agent = AgentBuilder::new()
-            .middleware(CacheMiddleware::new(cache_dir))
-            .build();
-        Self::with_agent_and_cache(agent, cache_dir)
+        ClientBuilder::new().cache(cache_dir).build()
     }
 
     #[cfg(test)]
     fn new_no_cache() -> Result<Self, ClientError> {
-        let agent = Agent::new();
-        Self::with_agent(agent)
+        ClientBuilder::new().build()
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
