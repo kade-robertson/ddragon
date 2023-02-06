@@ -30,3 +30,6 @@ pub mod async_client;
 
 #[cfg(feature = "async")]
 pub use async_client::AsyncClient;
+
+#[cfg(feature = "async")]
+pub use async_client::AsyncClientBuilder;

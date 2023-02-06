@@ -6,7 +6,7 @@ use image::{load_from_memory, DynamicImage};
 
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::Client;
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_middleware::{ClientBuilder as MiddlewareClientBuilder, ClientWithMiddleware};
 use serde::de::DeserializeOwned;
 use url::Url;
 
@@ -23,6 +23,167 @@ use crate::{
 };
 
 #[derive(Clone)]
+enum ClientAgent {
+    Plain(Client),
+    Middleware(ClientWithMiddleware),
+}
+
+/// Used for building an [AsyncClient] with custom options.
+pub struct AsyncClientBuilder {
+    agent: Option<ClientAgent>,
+    cache: Option<String>,
+}
+
+///
+/// # Examples
+///
+/// Using a new agent with no caching.
+///
+/// ```no_run
+/// # tokio_test::block_on(async {
+/// use ddragon::AsyncClientBuilder;
+///
+/// let client = AsyncClientBuilder::new().build().await.unwrap();
+/// # })
+/// ```
+///
+/// Using a provided agent, with no caching (unless a directory is specified
+/// with `.cache()`)
+///
+/// ```no_run
+/// # tokio_test::block_on(async {
+/// use reqwest::Client;
+/// use ddragon::AsyncClientBuilder;
+///
+/// let agent = Client::new();
+/// let client = AsyncClientBuilder::new().agent(agent).build().await.unwrap();
+/// # })
+/// ```
+///
+/// Using a provided agent that already has some middleware configured. In
+/// this case, all caching is expected to be handled by the provided agent.
+///
+/// ```no_run
+/// # tokio_test::block_on(async {
+/// use reqwest::Client;
+/// use reqwest_middleware::ClientBuilder;
+/// use ddragon::AsyncClientBuilder;
+///
+/// let agent = ClientBuilder::new(Client::new()).build();
+/// let client = AsyncClientBuilder::new().agent_with_middleware(agent).build().await.unwrap();
+/// # })
+/// ```
+///
+/// Using a new agent with full caching.
+///
+/// ```no_run
+/// # tokio_test::block_on(async {
+/// use ddragon::AsyncClientBuilder;
+///
+/// let client = AsyncClientBuilder::new().cache("./cache").build().await.unwrap();
+/// # })
+/// ```
+///
+/// Note: You can use `AsyncClient::new("./cache").await.unwrap()` as a shortcut for
+/// the last example.
+impl AsyncClientBuilder {
+    /// Creates an [AsyncClientBuilder] with no default options set.
+    pub fn new() -> Self {
+        Self {
+            agent: None,
+            cache: None,
+        }
+    }
+
+    /// Configures a custom [ClientWithMiddleware] for making network requests.
+    /// You must manage any desired caching behaviour.
+    pub fn agent_with_middleware(mut self, agent: ClientWithMiddleware) -> Self {
+        self.agent = Some(ClientAgent::Middleware(agent));
+        self
+    }
+
+    /// Configures a custom [Client] for making network requests. A caching
+    /// middleware will be wrapped around this if a cache directory is specified.
+    pub fn agent(mut self, agent: Client) -> Self {
+        self.agent = Some(ClientAgent::Plain(agent));
+        self
+    }
+
+    /// Configures the cache directory to use for anything that gets downlaoded.
+    pub fn cache(mut self, cache_dir: &str) -> Self {
+        self.cache = Some(cache_dir.to_owned());
+        self
+    }
+
+    /// Creates a new [AsyncClient] instance with the configured options.
+    ///
+    /// # Notes
+    ///
+    /// - If a custom [Client] is specified, not specifying a cache directory will
+    /// result in no content being cached.
+    pub async fn build(self) -> Result<AsyncClient, ClientError> {
+        let agent = match self.agent {
+            Some(a) => a,
+            None => ClientAgent::Plain(Client::new()),
+        };
+
+        #[cfg(not(test))]
+        let base_url = Url::parse("https://ddragon.leagueoflegends.com")?;
+
+        #[cfg(test)]
+        let base_url = Url::parse(&mockito::server_url())?;
+
+        let version_list = match agent.clone() {
+            ClientAgent::Plain(a) => {
+                a.get(base_url.join("/api/versions.json")?.as_str())
+                    .send()
+                    .await?
+                    .json::<Vec<String>>()
+                    .await?
+            }
+            ClientAgent::Middleware(a) => {
+                a.get(base_url.join("/api/versions.json")?.as_str())
+                    .send()
+                    .await?
+                    .json::<Vec<String>>()
+                    .await?
+            }
+        };
+
+        let latest_version = version_list
+            .get(0)
+            .ok_or(ClientError::NoLatestVersion)?
+            .to_owned();
+
+        let middleware_agent = match agent {
+            ClientAgent::Plain(plain_agent) => match self.cache {
+                Some(cache_dir) => MiddlewareClientBuilder::new(plain_agent)
+                    .with(Cache(HttpCache {
+                        mode: CacheMode::ForceCache,
+                        manager: CACacheManager { path: cache_dir },
+                        options: None,
+                    }))
+                    .build(),
+                None => MiddlewareClientBuilder::new(plain_agent).build(),
+            },
+            ClientAgent::Middleware(middleware_agent) => middleware_agent,
+        };
+
+        Ok(AsyncClient {
+            agent: middleware_agent,
+            version: latest_version,
+            base_url,
+        })
+    }
+}
+
+impl Default for AsyncClientBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Clone)]
 /// Provides access to the ddragon API.
 pub struct AsyncClient {
     agent: ClientWithMiddleware,
@@ -32,23 +193,9 @@ pub struct AsyncClient {
 }
 
 impl AsyncClient {
-    async fn create(agent: ClientWithMiddleware, base_url: Url) -> Result<Self, ClientError> {
-        let version_list = agent
-            .get(base_url.join("/api/versions.json")?.as_str())
-            .send()
-            .await?
-            .json::<Vec<String>>()
-            .await?;
-
-        let latest_version = version_list.get(0).ok_or(ClientError::NoLatestVersion)?;
-
-        Ok(AsyncClient {
-            agent,
-            version: latest_version.to_owned(),
-            base_url,
-        })
-    }
-
+    #[deprecated(
+        note = "Use `AsyncClientBuilder::new().agent_with_middleware(agent).build()` instead."
+    )]
     /// Creates a new client using a provided agent, in case you may want to
     /// customize the agent behaviour with additional middlewares (or anything
     /// else you might want to do)
@@ -63,15 +210,13 @@ impl AsyncClient {
     /// # })
     /// ```
     pub async fn with_agent(agent: ClientWithMiddleware) -> Result<Self, ClientError> {
-        #[cfg(not(test))]
-        let base_url = "https://ddragon.leagueoflegends.com".to_owned();
-
-        #[cfg(test)]
-        let base_url = mockito::server_url();
-
-        Self::create(agent, Url::parse(&base_url)?).await
+        AsyncClientBuilder::new()
+            .agent_with_middleware(agent)
+            .build()
+            .await
     }
 
+    #[deprecated(note = "Use `AsyncClientBuilder::new().agent(agent).build()` instead.")]
     /// Creates a new client using a provided agent, in case you want to bypass
     /// any caching mechanics.
     ///
@@ -84,7 +229,7 @@ impl AsyncClient {
     /// # })
     /// ```
     pub async fn with_plain_agent(agent: Client) -> Result<Self, ClientError> {
-        Self::with_agent(ClientBuilder::new(agent).build()).await
+        AsyncClientBuilder::new().agent(agent).build().await
     }
 
     /// Creates a new client with the specified directory as the caching location
@@ -98,16 +243,7 @@ impl AsyncClient {
     /// # })
     /// ```
     pub async fn new(cache_dir: &str) -> Result<Self, ClientError> {
-        let agent = ClientBuilder::new(Client::new())
-            .with(Cache(HttpCache {
-                mode: CacheMode::ForceCache,
-                manager: CACacheManager {
-                    path: cache_dir.to_owned(),
-                },
-                options: None,
-            }))
-            .build();
-        Self::with_agent(agent).await
+        AsyncClientBuilder::new().cache(cache_dir).build().await
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
@@ -374,7 +510,7 @@ mod test {
     impl Default for AsyncClient {
         fn default() -> Self {
             Self {
-                agent: ClientBuilder::new(Client::new()).build(),
+                agent: MiddlewareClientBuilder::new(Client::new()).build(),
                 version: "0.0.0".to_owned(),
                 base_url: Url::parse(&mockito::server_url()).unwrap(),
             }
@@ -392,7 +528,7 @@ mod test {
                 .with_body(r#"["0.0.0"]"#)
                 .create();
 
-            let maybe_client = block_on(AsyncClient::with_plain_agent(Client::new()));
+            let maybe_client = block_on(AsyncClientBuilder::new().build());
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -406,7 +542,7 @@ mod test {
                 .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
                 .create();
 
-            let maybe_client = block_on(AsyncClient::with_plain_agent(Client::new()));
+            let maybe_client = block_on(AsyncClientBuilder::new().build());
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -414,7 +550,7 @@ mod test {
 
         #[test]
         fn result_err_server_unavailable() {
-            assert!(block_on(AsyncClient::with_plain_agent(Client::new())).is_err());
+            assert!(block_on(AsyncClientBuilder::new().build()).is_err());
         }
 
         #[test]
@@ -425,7 +561,7 @@ mod test {
                 .with_body(r#"[]"#)
                 .create();
 
-            assert!(block_on(AsyncClient::with_plain_agent(Client::new())).is_err());
+            assert!(block_on(AsyncClientBuilder::new().build()).is_err());
         }
 
         #[test]
@@ -435,7 +571,7 @@ mod test {
                 .with_body(r#"some non-deserializable content"#)
                 .create();
 
-            assert!(block_on(AsyncClient::with_plain_agent(Client::new())).is_err());
+            assert!(block_on(AsyncClientBuilder::new().build()).is_err());
         }
     }
 

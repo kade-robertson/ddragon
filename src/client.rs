@@ -41,7 +41,7 @@ pub struct ClientBuilder {
 /// use ddragon::ClientBuilder;
 ///
 /// let client = ClientBuilder::new().build().unwrap();
-/// ````
+/// ```
 ///
 /// Using a provided agent, with no caching (unless you provide an agent with
 /// its own caching middleware).
@@ -52,7 +52,7 @@ pub struct ClientBuilder {
 ///
 /// let agent = Agent::new();
 /// let client = ClientBuilder::new().agent(agent).build().unwrap();
-/// ````
+/// ```
 ///
 /// Using a new agent with full caching.
 ///
@@ -60,7 +60,10 @@ pub struct ClientBuilder {
 /// use ddragon::ClientBuilder;
 ///
 /// let client = ClientBuilder::new().cache("./cache").build().unwrap();
-/// ````
+/// ```
+///
+/// Note: You can use `Client::new("./cache").unwrap()` as a shortcut for
+/// the last example.
 impl ClientBuilder {
     /// Creates a [ClientBuilder] with no default options set.
     pub fn new() -> Self {
