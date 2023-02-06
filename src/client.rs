@@ -1,17 +1,19 @@
 #![cfg_attr(docsrs, doc(cfg(feature = "sync")))]
 #![warn(missing_docs)]
 
+#[cfg(test)]
+use mockito;
+
 #[cfg(feature = "image")]
-use image::DynamicImage;
+use image::{load_from_memory, DynamicImage};
 
 #[cfg(feature = "image")]
 use std::io::Read;
 
+use cacache_sync::{read as cache_read, write as cache_write};
 use serde::de::DeserializeOwned;
+use ureq::{Agent, AgentBuilder};
 use url::Url;
-
-#[cfg(test)]
-use mockito;
 
 use crate::cache_middleware::CacheMiddleware;
 
@@ -24,18 +26,19 @@ use crate::{
     DDragonClientError,
 };
 
+#[derive(Clone)]
 /// Provides access to the ddragon API.
-pub struct DDragonClient {
-    agent: ureq::Agent,
+pub struct Client {
+    agent: Agent,
     /// The current version of the API data reported back to us from the API.
     pub version: String,
     base_url: Url,
     cache_directory: Option<String>,
 }
 
-impl DDragonClient {
+impl Client {
     fn create(
-        agent: ureq::Agent,
+        agent: Agent,
         base_url: Url,
         cache_directory: Option<String>,
     ) -> Result<Self, DDragonClientError> {
@@ -49,7 +52,7 @@ impl DDragonClient {
             .get(0)
             .ok_or(DDragonClientError::NoLatestVersion)?;
 
-        Ok(DDragonClient {
+        Ok(Client {
             agent,
             version: latest_version.to_owned(),
             base_url,
@@ -70,12 +73,12 @@ impl DDragonClient {
     /// </p>
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
     /// let agent = ureq::AgentBuilder::new().build();
-    /// let api = DDragonClient::with_agent(agent).unwrap();
+    /// let api = Client::with_agent(agent).unwrap();
     /// ```
-    pub fn with_agent(agent: ureq::Agent) -> Result<Self, DDragonClientError> {
+    pub fn with_agent(agent: Agent) -> Result<Self, DDragonClientError> {
         #[cfg(not(test))]
         let base_url = "https://ddragon.leagueoflegends.com".to_owned();
 
@@ -90,13 +93,13 @@ impl DDragonClient {
     /// else you might want to do).
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
     /// let agent = ureq::AgentBuilder::new().build();
-    /// let api = DDragonClient::with_agent_and_cache(agent, "./cache").unwrap();
+    /// let api = Client::with_agent_and_cache(agent, "./cache").unwrap();
     /// ```
     pub fn with_agent_and_cache(
-        agent: ureq::Agent,
+        agent: Agent,
         cache_directory: &str,
     ) -> Result<Self, DDragonClientError> {
         #[cfg(not(test))]
@@ -116,12 +119,12 @@ impl DDragonClient {
     /// for any data the client downloads.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// ```
     pub fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
-        let agent = ureq::AgentBuilder::new()
+        let agent = AgentBuilder::new()
             .middleware(CacheMiddleware::new(cache_dir))
             .build();
         Self::with_agent_and_cache(agent, cache_dir)
@@ -129,7 +132,7 @@ impl DDragonClient {
 
     #[cfg(test)]
     fn new_no_cache() -> Result<Self, DDragonClientError> {
-        let agent = ureq::Agent::new();
+        let agent = Agent::new();
         Self::with_agent(agent)
     }
 
@@ -153,9 +156,9 @@ impl DDragonClient {
     /// Returns challenge data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let challenges = api.challenges().unwrap();
     /// ```
     pub fn challenges(&self) -> Result<Challenges, DDragonClientError> {
@@ -168,9 +171,9 @@ impl DDragonClient {
     /// cases (e.x. Wukong's key is MonkeyKing).
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let wukong = api.champion("MonkeyKing").unwrap();
     /// ```
     pub fn champion(&self, key: &str) -> Result<Champion, DDragonClientError> {
@@ -184,9 +187,9 @@ impl DDragonClient {
     /// Returns champion data -- short version.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let champions = api.champions().unwrap();
     /// ```
     pub fn champions(&self) -> Result<Champions, DDragonClientError> {
@@ -196,9 +199,9 @@ impl DDragonClient {
     /// Returns champion data -- complete version.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let champions_full = api.champions_full().unwrap();
     /// ```
     pub fn champions_full(&self) -> Result<ChampionsFull, DDragonClientError> {
@@ -208,9 +211,9 @@ impl DDragonClient {
     /// Returns item data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let items = api.items().unwrap();
     /// ```
     pub fn items(&self) -> Result<Items, DDragonClientError> {
@@ -220,9 +223,9 @@ impl DDragonClient {
     /// Returns map data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let maps = api.maps().unwrap();
     /// ```
     pub fn maps(&self) -> Result<Maps, DDragonClientError> {
@@ -232,9 +235,9 @@ impl DDragonClient {
     /// Returns mission asset data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let mission_assets = api.mission_assets().unwrap();
     /// ```
     pub fn mission_assets(&self) -> Result<MissionAssets, DDragonClientError> {
@@ -244,9 +247,9 @@ impl DDragonClient {
     /// Returns profile icon data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let profile_icons = api.profile_icons().unwrap();
     /// ```
     pub fn profile_icons(&self) -> Result<ProfileIcons, DDragonClientError> {
@@ -256,9 +259,9 @@ impl DDragonClient {
     /// Returns rune data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let runes = api.runes().unwrap();
     /// ```
     pub fn runes(&self) -> Result<Runes, DDragonClientError> {
@@ -268,9 +271,9 @@ impl DDragonClient {
     /// Returns spell buff data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let spell_buffs = api.spell_buffs().unwrap();
     /// ```
     pub fn spell_buffs(&self) -> Result<SpellBuffs, DDragonClientError> {
@@ -280,9 +283,9 @@ impl DDragonClient {
     /// Returns summoner spell data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let summoner_spells = api.summoner_spells().unwrap();
     /// ```
     pub fn summoner_spells(&self) -> Result<SummonerSpells, DDragonClientError> {
@@ -292,9 +295,9 @@ impl DDragonClient {
     /// Returns translation data.
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let translations = api.translations().unwrap();
     /// ```
     pub fn translations(&self) -> Result<Translations, DDragonClientError> {
@@ -306,7 +309,7 @@ impl DDragonClient {
         let cache_key = path.as_str();
 
         if let Some(cache_dir) = &self.cache_directory {
-            if let Ok(image_data) = cacache_sync::read(cache_dir, cache_key) {
+            if let Ok(image_data) = cache_read(cache_dir, cache_key) {
                 return image::load_from_memory(&image_data).map_err(|e| e.into());
             }
         }
@@ -332,10 +335,10 @@ impl DDragonClient {
             .into_reader()
             .take(image_size_bytes)
             .read_to_end(&mut image_buffer)?;
-        let image_result = image::load_from_memory(&image_buffer).map_err(|e| e.into());
+        let image_result = load_from_memory(&image_buffer).map_err(|e| e.into());
 
         if let Some(cache_dir) = &self.cache_directory {
-            let _ = cacache_sync::write(cache_dir, cache_key, image_buffer);
+            let _ = cache_write(cache_dir, cache_key, image_buffer);
         }
 
         image_result
@@ -344,9 +347,9 @@ impl DDragonClient {
     /// Returns an [image::DynamicImage].
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let champion = api.champion("MonkeyKing").unwrap();
     /// let image = api.image_of(&champion).unwrap();
     /// ```
@@ -366,9 +369,9 @@ impl DDragonClient {
     /// the appropriate piece using the information on the [Image](crate::models::shared::Image).
     ///
     /// ```no_run
-    /// use ddragon::DDragonClient;
+    /// use ddragon::Client;
     ///
-    /// let api = DDragonClient::new("./cache").unwrap();
+    /// let api = Client::new("./cache").unwrap();
     /// let champion = api.champion("MonkeyKing").unwrap();
     /// let sprite = api.sprite_of(&champion).unwrap();
     /// ```
@@ -388,7 +391,7 @@ mod test {
     use super::*;
     use mockito::mock;
 
-    impl Default for DDragonClient {
+    impl Default for Client {
         fn default() -> Self {
             Self {
                 agent: ureq::Agent::new(),
@@ -410,7 +413,7 @@ mod test {
                 .with_body(r#"["0.0.0"]"#)
                 .create();
 
-            let maybe_client = DDragonClient::new_no_cache();
+            let maybe_client = Client::new_no_cache();
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -424,7 +427,7 @@ mod test {
                 .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
                 .create();
 
-            let maybe_client = DDragonClient::new_no_cache();
+            let maybe_client = Client::new_no_cache();
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -432,7 +435,7 @@ mod test {
 
         #[test]
         fn result_err_server_unavailable() {
-            assert!(DDragonClient::new_no_cache().is_err());
+            assert!(Client::new_no_cache().is_err());
         }
 
         #[test]
@@ -443,7 +446,7 @@ mod test {
                 .with_body(r#"[]"#)
                 .create();
 
-            assert!(DDragonClient::new_no_cache().is_err());
+            assert!(Client::new_no_cache().is_err());
         }
 
         #[test]
@@ -453,7 +456,7 @@ mod test {
                 .with_body(r#"some non-deserializable content"#)
                 .create();
 
-            assert!(DDragonClient::new_no_cache().is_err());
+            assert!(Client::new_no_cache().is_err());
         }
     }
 
@@ -462,7 +465,7 @@ mod test {
 
         #[test]
         fn get_data_url_constructs_expected_baseurl() {
-            let client = DDragonClient::default();
+            let client = Client::default();
             assert_eq!(
                 client.get_data_url().unwrap().as_str(),
                 format!("{}/cdn/0.0.0/data/en_US/", mockito::server_url())
@@ -471,7 +474,7 @@ mod test {
 
         #[test]
         fn get_data_err_if_server_unavailable() {
-            let client = DDragonClient::default();
+            let client = Client::default();
             assert!(client.get_data::<String>("/fake-endpoint").is_err());
         }
 
@@ -483,7 +486,7 @@ mod test {
                 .with_body(r#"no chance to deserialize this"#)
                 .create();
 
-            let client = DDragonClient::default();
+            let client = Client::default();
             assert!(client.get_data::<String>("./data.json").is_err());
         }
 
@@ -495,7 +498,7 @@ mod test {
                 .with_body(r#"["value"]"#)
                 .create();
 
-            let client = DDragonClient::default();
+            let client = Client::default();
             assert_eq!(
                 client.get_data::<Vec<String>>("./data.json").unwrap(),
                 vec!["value".to_owned()]

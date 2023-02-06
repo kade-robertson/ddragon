@@ -2,7 +2,7 @@
 use std::{env::temp_dir, fs::remove_dir_all, time::Instant};
 
 #[cfg(feature = "sync")]
-use ddragon::DDragonClient;
+use ddragon::Client;
 
 #[cfg(feature = "sync")]
 #[test]
@@ -10,7 +10,7 @@ fn health_check() {
     let tempdir = temp_dir().join("ddragon-cache");
     let _ = remove_dir_all(&tempdir);
 
-    let client = DDragonClient::new(tempdir.as_os_str().to_str().unwrap()).unwrap();
+    let client = Client::new(tempdir.as_os_str().to_str().unwrap()).unwrap();
 
     let uncached_start = Instant::now();
     let challenges = client.challenges().unwrap();
