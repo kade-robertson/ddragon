@@ -15,7 +15,7 @@ use mockito;
 
 use crate::{
     models::{
-        champion::ChampionWrapper, shared::HasImage, Challenges, Champion, Champions,
+        champion::ChampionWrapper, shared::HasImage, tft::Arenas, Challenges, Champion, Champions,
         ChampionsFull, Items, Maps, MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells,
         Translations,
     },
@@ -439,6 +439,20 @@ impl AsyncClient {
     /// ```
     pub async fn translations(&self) -> Result<Translations, ClientError> {
         self.get_data::<Translations>("./language.json").await
+    }
+
+    /// Returns TFT arena data.
+    ///
+    /// ```no_run
+    /// # tokio_test::block_on(async {
+    /// use ddragon::AsyncClient;
+    ///
+    /// let api = AsyncClient::new("./cache").await.unwrap();
+    /// let arenas = api.tft_arenas().await.unwrap();
+    /// # })
+    /// ```
+    pub async fn tft_arenas(&self) -> Result<Arenas, ClientError> {
+        self.get_data::<Arenas>("./tft-arena.json").await
     }
 
     #[cfg(feature = "image")]

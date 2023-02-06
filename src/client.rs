@@ -18,6 +18,7 @@ use url::Url;
 use crate::cache_middleware::CacheMiddleware;
 
 use crate::models::shared::HasImage;
+use crate::models::tft::Arenas;
 use crate::{
     models::{
         champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
@@ -374,6 +375,18 @@ impl Client {
     /// ```
     pub fn translations(&self) -> Result<Translations, ClientError> {
         self.get_data::<Translations>("./language.json")
+    }
+
+    /// Returns TFT arena data.
+    ///
+    /// ```no_run
+    /// use ddragon::Client;
+    ///
+    /// let api = Client::new("./cache").unwrap();
+    /// let arenas = api.tft_arenas().unwrap();
+    /// ```
+    pub fn tft_arenas(&self) -> Result<Arenas, ClientError> {
+        self.get_data::<Arenas>("./tft-arena.json")
     }
 
     #[cfg(feature = "image")]

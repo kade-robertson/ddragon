@@ -27,6 +27,7 @@ fn health_check() {
     let spell_buffs = client.spell_buffs().unwrap();
     let summoner_spells = client.summoner_spells().unwrap();
     let translations = client.translations().unwrap();
+    let tft_arenas = client.tft_arenas().unwrap();
     let uncached_duration = uncached_start.elapsed();
 
     let cached_start = Instant::now();
@@ -44,6 +45,7 @@ fn health_check() {
     let cached_spell_buffs = client.spell_buffs().unwrap();
     let cached_summoner_spells = client.summoner_spells().unwrap();
     let cached_translations = client.translations().unwrap();
+    let cached_tft_arenas = client.tft_arenas().unwrap();
     let cached_duration = cached_start.elapsed();
 
     println!();
@@ -65,6 +67,7 @@ fn health_check() {
     assert_eq!(spell_buffs, cached_spell_buffs);
     assert_eq!(summoner_spells, cached_summoner_spells);
     assert_eq!(translations, cached_translations);
+    assert_eq!(tft_arenas, cached_tft_arenas);
 }
 
 #[cfg(feature = "async")]
@@ -96,6 +99,7 @@ fn async_health_check() {
     let spell_buffs = block_on(client.spell_buffs()).unwrap();
     let summoner_spells = block_on(client.summoner_spells()).unwrap();
     let translations = block_on(client.translations()).unwrap();
+    let tft_arenas = block_on(client.tft_arenas()).unwrap();
     let uncached_duration = uncached_start.elapsed();
 
     let cached_start = Instant::now();
@@ -113,6 +117,7 @@ fn async_health_check() {
     let cached_spell_buffs = block_on(client.spell_buffs()).unwrap();
     let cached_summoner_spells = block_on(client.summoner_spells()).unwrap();
     let cached_translations = block_on(client.translations()).unwrap();
+    let cached_tft_arenas = block_on(client.tft_arenas()).unwrap();
     let cached_duration = cached_start.elapsed();
 
     println!();
@@ -134,4 +139,5 @@ fn async_health_check() {
     assert_eq!(spell_buffs, cached_spell_buffs);
     assert_eq!(summoner_spells, cached_summoner_spells);
     assert_eq!(translations, cached_translations);
+    assert_eq!(tft_arenas, cached_tft_arenas);
 }
