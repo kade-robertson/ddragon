@@ -8,7 +8,7 @@ pub mod models;
 mod error;
 
 #[cfg(any(feature = "sync", feature = "async"))]
-pub use error::DDragonClientError;
+pub use error::ClientError;
 
 #[cfg(feature = "sync")]
 /// Contains the local file caching middleware used for `ureq`.
@@ -19,11 +19,11 @@ pub mod cache_middleware;
 pub mod client;
 
 #[cfg(feature = "sync")]
-pub use client::DDragonClient;
+pub use client::Client;
 
 #[cfg(feature = "async")]
 /// Contains the async version of the client API.
 pub mod async_client;
 
 #[cfg(feature = "async")]
-pub use async_client::AsyncDDragonClient;
+pub use async_client::AsyncClient;

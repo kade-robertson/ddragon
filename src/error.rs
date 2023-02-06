@@ -4,7 +4,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 /// Any potential error the client may run into during operation.
-pub enum DDragonClientError {
+pub enum ClientError {
     #[error("Could not parse URL.")]
     /// Indicates the operation failed because parsing a URL via the `url` crate
     /// failed.
