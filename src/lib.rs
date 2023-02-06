@@ -26,4 +26,4 @@ pub use client::Client;
 pub mod async_client;
 
 #[cfg(feature = "async")]
-pub use async_client::AsyncDDragonClient;
+pub use async_client::AsyncClient;

@@ -2,7 +2,7 @@
 #![warn(missing_docs)]
 
 #[cfg(feature = "image")]
-use image::DynamicImage;
+use image::{load_from_memory, DynamicImage};
 
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
 use reqwest::Client;
@@ -22,15 +22,16 @@ use crate::{
     DDragonClientError,
 };
 
+#[derive(Clone)]
 /// Provides access to the ddragon API.
-pub struct AsyncDDragonClient {
+pub struct AsyncClient {
     agent: ClientWithMiddleware,
     /// The current version of the API data reported back to us from the API.
     pub version: String,
     base_url: Url,
 }
 
-impl AsyncDDragonClient {
+impl AsyncClient {
     async fn create(
         agent: ClientWithMiddleware,
         base_url: Url,
@@ -46,7 +47,7 @@ impl AsyncDDragonClient {
             .get(0)
             .ok_or(DDragonClientError::NoLatestVersion)?;
 
-        Ok(AsyncDDragonClient {
+        Ok(AsyncClient {
             agent,
             version: latest_version.to_owned(),
             base_url,
@@ -59,11 +60,11 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
     /// let plain_agent = reqwest::Client::new();
     /// let agent = reqwest_middleware::ClientBuilder::new(plain_agent).build();
-    /// let api = AsyncDDragonClient::with_agent(agent).await.unwrap();
+    /// let api = AsyncClient::with_agent(agent).await.unwrap();
     /// # })
     /// ```
     pub async fn with_agent(agent: ClientWithMiddleware) -> Result<Self, DDragonClientError> {
@@ -81,10 +82,10 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
     /// let plain_agent = reqwest::Client::new();
-    /// let api = AsyncDDragonClient::with_plain_agent(plain_agent).await.unwrap();
+    /// let api = AsyncClient::with_plain_agent(plain_agent).await.unwrap();
     /// # })
     /// ```
     pub async fn with_plain_agent(agent: Client) -> Result<Self, DDragonClientError> {
@@ -96,9 +97,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// # })
     /// ```
     pub async fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
@@ -136,9 +137,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let challenges = api.challenges().await.unwrap();
     /// # })
     /// ```
@@ -153,9 +154,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let wukong = api.champion("MonkeyKing").await.unwrap();
     /// # })
     /// ```
@@ -172,9 +173,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let champions = api.champions().await.unwrap();
     /// # })
     /// ```
@@ -186,9 +187,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let champions_full = api.champions_full().await.unwrap();
     /// # })
     /// ```
@@ -200,9 +201,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let items = api.items().await.unwrap();
     /// # })
     /// ```
@@ -214,9 +215,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let maps = api.maps().await.unwrap();
     /// # })
     /// ```
@@ -228,9 +229,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let mission_assets = api.mission_assets().await.unwrap();
     /// # })
     /// ```
@@ -243,9 +244,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let profile_icons = api.profile_icons().await.unwrap();
     /// # })
     /// ```
@@ -257,9 +258,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let runes = api.runes().await.unwrap();
     /// # })
     /// ```
@@ -271,9 +272,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let spell_buffs = api.spell_buffs().await.unwrap();
     /// # })
     /// ```
@@ -285,9 +286,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let summoner_spells = api.summoner_spells().await.unwrap();
     /// # })
     /// ```
@@ -299,9 +300,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let translations = api.translations().await.unwrap();
     /// # })
     /// ```
@@ -318,16 +319,16 @@ impl AsyncDDragonClient {
             .await
             .map_err(std::convert::Into::<DDragonClientError>::into)?;
 
-        image::load_from_memory(&response.bytes().await?).map_err(|e| e.into())
+        load_from_memory(&response.bytes().await?).map_err(|e| e.into())
     }
 
     /// Returns an [image::DynamicImage].
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let champion = api.champion("MonkeyKing").await.unwrap();
     /// let image = api.image_of(&champion).await.unwrap();
     /// # })
@@ -353,9 +354,9 @@ impl AsyncDDragonClient {
     ///
     /// ```no_run
     /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncDDragonClient;
+    /// use ddragon::AsyncClient;
     ///
-    /// let api = AsyncDDragonClient::new("./cache").await.unwrap();
+    /// let api = AsyncClient::new("./cache").await.unwrap();
     /// let champion = api.champion("MonkeyKing").await.unwrap();
     /// let sprite = api.sprite_of(&champion).await.unwrap();
     /// # })
@@ -381,7 +382,7 @@ mod test {
     use mockito::mock;
     use tokio_test::block_on;
 
-    impl Default for AsyncDDragonClient {
+    impl Default for AsyncClient {
         fn default() -> Self {
             Self {
                 agent: ClientBuilder::new(Client::new()).build(),
@@ -402,7 +403,7 @@ mod test {
                 .with_body(r#"["0.0.0"]"#)
                 .create();
 
-            let maybe_client = block_on(AsyncDDragonClient::with_plain_agent(Client::new()));
+            let maybe_client = block_on(AsyncClient::with_plain_agent(Client::new()));
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -416,7 +417,7 @@ mod test {
                 .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
                 .create();
 
-            let maybe_client = block_on(AsyncDDragonClient::with_plain_agent(Client::new()));
+            let maybe_client = block_on(AsyncClient::with_plain_agent(Client::new()));
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -424,7 +425,7 @@ mod test {
 
         #[test]
         fn result_err_server_unavailable() {
-            assert!(block_on(AsyncDDragonClient::with_plain_agent(Client::new())).is_err());
+            assert!(block_on(AsyncClient::with_plain_agent(Client::new())).is_err());
         }
 
         #[test]
@@ -435,7 +436,7 @@ mod test {
                 .with_body(r#"[]"#)
                 .create();
 
-            assert!(block_on(AsyncDDragonClient::with_plain_agent(Client::new())).is_err());
+            assert!(block_on(AsyncClient::with_plain_agent(Client::new())).is_err());
         }
 
         #[test]
@@ -445,7 +446,7 @@ mod test {
                 .with_body(r#"some non-deserializable content"#)
                 .create();
 
-            assert!(block_on(AsyncDDragonClient::with_plain_agent(Client::new())).is_err());
+            assert!(block_on(AsyncClient::with_plain_agent(Client::new())).is_err());
         }
     }
 
@@ -454,7 +455,7 @@ mod test {
 
         #[test]
         fn get_data_url_constructs_expected_baseurl() {
-            let client = AsyncDDragonClient::default();
+            let client = AsyncClient::default();
             assert_eq!(
                 client.get_data_url().unwrap().as_str(),
                 format!("{}/cdn/0.0.0/data/en_US/", mockito::server_url())
@@ -463,7 +464,7 @@ mod test {
 
         #[test]
         fn get_data_err_if_server_unavailable() {
-            let client = AsyncDDragonClient::default();
+            let client = AsyncClient::default();
             assert!(block_on(client.get_data::<String>("/fake-endpoint")).is_err());
         }
 
@@ -475,7 +476,7 @@ mod test {
                 .with_body(r#"no chance to deserialize this"#)
                 .create();
 
-            let client = AsyncDDragonClient::default();
+            let client = AsyncClient::default();
             assert!(block_on(client.get_data::<String>("./data.json")).is_err());
         }
 
@@ -487,7 +488,7 @@ mod test {
                 .with_body(r#"["value"]"#)
                 .create();
 
-            let client = AsyncDDragonClient::default();
+            let client = AsyncClient::default();
             assert_eq!(
                 block_on(client.get_data::<Vec<String>>("./data.json")).unwrap(),
                 vec!["value".to_owned()]

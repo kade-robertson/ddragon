@@ -68,7 +68,7 @@ fn health_check() {
 }
 
 #[cfg(feature = "async")]
-use ddragon::AsyncDDragonClient;
+use ddragon::AsyncClient;
 
 #[cfg(feature = "async")]
 use tokio_test::block_on;
@@ -79,10 +79,7 @@ fn async_health_check() {
     let tempdir = temp_dir().join("ddragon-async-cache");
     let _ = remove_dir_all(&tempdir);
 
-    let client = block_on(AsyncDDragonClient::new(
-        tempdir.as_os_str().to_str().unwrap(),
-    ))
-    .unwrap();
+    let client = block_on(AsyncClient::new(tempdir.as_os_str().to_str().unwrap())).unwrap();
 
     let uncached_start = Instant::now();
     let challenges = block_on(client.challenges()).unwrap();
