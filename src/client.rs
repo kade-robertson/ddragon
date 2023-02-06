@@ -23,7 +23,7 @@ use crate::{
         champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
         MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
     },
-    DDragonClientError,
+    ClientError,
 };
 
 #[derive(Clone)]
@@ -41,16 +41,14 @@ impl Client {
         agent: Agent,
         base_url: Url,
         cache_directory: Option<String>,
-    ) -> Result<Self, DDragonClientError> {
+    ) -> Result<Self, ClientError> {
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
             .call()
             .map_err(Box::new)?
             .into_json::<Vec<String>>()?;
 
-        let latest_version = version_list
-            .get(0)
-            .ok_or(DDragonClientError::NoLatestVersion)?;
+        let latest_version = version_list.get(0).ok_or(ClientError::NoLatestVersion)?;
 
         Ok(Client {
             agent,
@@ -78,7 +76,7 @@ impl Client {
     /// let agent = ureq::AgentBuilder::new().build();
     /// let api = Client::with_agent(agent).unwrap();
     /// ```
-    pub fn with_agent(agent: Agent) -> Result<Self, DDragonClientError> {
+    pub fn with_agent(agent: Agent) -> Result<Self, ClientError> {
         #[cfg(not(test))]
         let base_url = "https://ddragon.leagueoflegends.com".to_owned();
 
@@ -98,10 +96,7 @@ impl Client {
     /// let agent = ureq::AgentBuilder::new().build();
     /// let api = Client::with_agent_and_cache(agent, "./cache").unwrap();
     /// ```
-    pub fn with_agent_and_cache(
-        agent: Agent,
-        cache_directory: &str,
-    ) -> Result<Self, DDragonClientError> {
+    pub fn with_agent_and_cache(agent: Agent, cache_directory: &str) -> Result<Self, ClientError> {
         #[cfg(not(test))]
         let base_url = "https://ddragon.leagueoflegends.com".to_owned();
 
@@ -123,7 +118,7 @@ impl Client {
     ///
     /// let api = Client::new("./cache").unwrap();
     /// ```
-    pub fn new(cache_dir: &str) -> Result<Self, DDragonClientError> {
+    pub fn new(cache_dir: &str) -> Result<Self, ClientError> {
         let agent = AgentBuilder::new()
             .middleware(CacheMiddleware::new(cache_dir))
             .build();
@@ -131,7 +126,7 @@ impl Client {
     }
 
     #[cfg(test)]
-    fn new_no_cache() -> Result<Self, DDragonClientError> {
+    fn new_no_cache() -> Result<Self, ClientError> {
         let agent = Agent::new();
         Self::with_agent(agent)
     }
@@ -141,7 +136,7 @@ impl Client {
             .join(&format!("/cdn/{}/data/en_US/", &self.version))
     }
 
-    fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, DDragonClientError> {
+    fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, ClientError> {
         let joined_url = self.get_data_url()?.join(endpoint)?;
         let request_url = joined_url.as_str();
 
@@ -161,7 +156,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let challenges = api.challenges().unwrap();
     /// ```
-    pub fn challenges(&self) -> Result<Challenges, DDragonClientError> {
+    pub fn challenges(&self) -> Result<Challenges, ClientError> {
         self.get_data::<Challenges>("./challenges.json")
     }
 
@@ -176,12 +171,12 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let wukong = api.champion("MonkeyKing").unwrap();
     /// ```
-    pub fn champion(&self, key: &str) -> Result<Champion, DDragonClientError> {
+    pub fn champion(&self, key: &str) -> Result<Champion, ClientError> {
         self.get_data::<ChampionWrapper>(&format!("./champion/{key}.json"))?
             .data
             .get(key)
             .cloned()
-            .ok_or(DDragonClientError::NoChampionData)
+            .ok_or(ClientError::NoChampionData)
     }
 
     /// Returns champion data -- short version.
@@ -192,7 +187,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let champions = api.champions().unwrap();
     /// ```
-    pub fn champions(&self) -> Result<Champions, DDragonClientError> {
+    pub fn champions(&self) -> Result<Champions, ClientError> {
         self.get_data::<Champions>("./champion.json")
     }
 
@@ -204,7 +199,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let champions_full = api.champions_full().unwrap();
     /// ```
-    pub fn champions_full(&self) -> Result<ChampionsFull, DDragonClientError> {
+    pub fn champions_full(&self) -> Result<ChampionsFull, ClientError> {
         self.get_data::<ChampionsFull>("./championFull.json")
     }
 
@@ -216,7 +211,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let items = api.items().unwrap();
     /// ```
-    pub fn items(&self) -> Result<Items, DDragonClientError> {
+    pub fn items(&self) -> Result<Items, ClientError> {
         self.get_data::<Items>("./item.json")
     }
 
@@ -228,7 +223,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let maps = api.maps().unwrap();
     /// ```
-    pub fn maps(&self) -> Result<Maps, DDragonClientError> {
+    pub fn maps(&self) -> Result<Maps, ClientError> {
         self.get_data::<Maps>("./map.json")
     }
 
@@ -240,7 +235,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let mission_assets = api.mission_assets().unwrap();
     /// ```
-    pub fn mission_assets(&self) -> Result<MissionAssets, DDragonClientError> {
+    pub fn mission_assets(&self) -> Result<MissionAssets, ClientError> {
         self.get_data::<MissionAssets>("./mission-assets.json")
     }
 
@@ -252,7 +247,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let profile_icons = api.profile_icons().unwrap();
     /// ```
-    pub fn profile_icons(&self) -> Result<ProfileIcons, DDragonClientError> {
+    pub fn profile_icons(&self) -> Result<ProfileIcons, ClientError> {
         self.get_data::<ProfileIcons>("./profileicon.json")
     }
 
@@ -264,7 +259,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let runes = api.runes().unwrap();
     /// ```
-    pub fn runes(&self) -> Result<Runes, DDragonClientError> {
+    pub fn runes(&self) -> Result<Runes, ClientError> {
         self.get_data::<Runes>("./runesReforged.json")
     }
 
@@ -276,7 +271,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let spell_buffs = api.spell_buffs().unwrap();
     /// ```
-    pub fn spell_buffs(&self) -> Result<SpellBuffs, DDragonClientError> {
+    pub fn spell_buffs(&self) -> Result<SpellBuffs, ClientError> {
         self.get_data::<SpellBuffs>("./spellbuffs.json")
     }
 
@@ -288,7 +283,7 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let summoner_spells = api.summoner_spells().unwrap();
     /// ```
-    pub fn summoner_spells(&self) -> Result<SummonerSpells, DDragonClientError> {
+    pub fn summoner_spells(&self) -> Result<SummonerSpells, ClientError> {
         self.get_data::<SummonerSpells>("./summoner.json")
     }
 
@@ -300,12 +295,12 @@ impl Client {
     /// let api = Client::new("./cache").unwrap();
     /// let translations = api.translations().unwrap();
     /// ```
-    pub fn translations(&self) -> Result<Translations, DDragonClientError> {
+    pub fn translations(&self) -> Result<Translations, ClientError> {
         self.get_data::<Translations>("./language.json")
     }
 
     #[cfg(feature = "image")]
-    fn get_image(&self, path: Url) -> Result<DynamicImage, DDragonClientError> {
+    fn get_image(&self, path: Url) -> Result<DynamicImage, ClientError> {
         let cache_key = path.as_str();
 
         if let Some(cache_dir) = &self.cache_directory {
@@ -318,7 +313,7 @@ impl Client {
             .agent
             .get(cache_key)
             .call()
-            .map_err(|e| std::convert::Into::<DDragonClientError>::into(Box::new(e)))?;
+            .map_err(|e| std::convert::Into::<ClientError>::into(Box::new(e)))?;
 
         // We don't want to assume we can just read_to_end cleanly, so ideally
         // we get a header telling us how many bytes we can read. If we can't,
@@ -355,7 +350,7 @@ impl Client {
     /// ```
     #[cfg(feature = "image")]
     #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
-    pub fn image_of<T: HasImage>(&self, item: &T) -> Result<DynamicImage, DDragonClientError> {
+    pub fn image_of<T: HasImage>(&self, item: &T) -> Result<DynamicImage, ClientError> {
         self.get_image(self.base_url.join(&format!(
             "/cdn/{}/img/{}",
             &self.version,
@@ -377,7 +372,7 @@ impl Client {
     /// ```
     #[cfg(feature = "image")]
     #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
-    pub fn sprite_of<T: HasImage>(&self, item: &T) -> Result<DynamicImage, DDragonClientError> {
+    pub fn sprite_of<T: HasImage>(&self, item: &T) -> Result<DynamicImage, ClientError> {
         self.get_image(self.base_url.join(&format!(
             "/cdn/{}/img/{}",
             &self.version,
