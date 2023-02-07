@@ -18,7 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: dtolnay/rust-toolchain@master
+      - id: toolchain
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
 
@@ -32,8 +33,8 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/            
-          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
+          key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
 
       - name: Install tools
         run: |
@@ -41,4 +42,6 @@ jobs:
           cargo install --locked cargo-outdated
 
       - name: Test (to build cache)
-        run: cargo test --all-features -- --test-threads 1
+        run: |
+          cargo test --all-features -- --test-threads 1
+          cargo test --all-features --release -- --test-threads 1

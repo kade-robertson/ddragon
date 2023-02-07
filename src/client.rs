@@ -72,10 +72,7 @@ pub struct ClientBuilder {
 impl ClientBuilder {
     /// Creates a [ClientBuilder] with no default options set.
     pub fn new() -> Self {
-        Self {
-            agent: None,
-            cache: None,
-        }
+        Self { agent: None, cache: None }
     }
 
     /// Configures a custom [Agent] for making network requests.
@@ -103,9 +100,7 @@ impl ClientBuilder {
         let agent = match self.agent {
             Some(a) => a,
             None => match self.cache.clone() {
-                Some(dir) => AgentBuilder::new()
-                    .middleware(CacheMiddleware::new(&dir))
-                    .build(),
+                Some(dir) => AgentBuilder::new().middleware(CacheMiddleware::new(&dir)).build(),
                 None => Agent::new(),
             },
         };
@@ -122,17 +117,9 @@ impl ClientBuilder {
             .map_err(Box::new)?
             .into_json::<Vec<String>>()?;
 
-        let latest_version = version_list
-            .get(0)
-            .ok_or(ClientError::NoLatestVersion)?
-            .to_owned();
+        let latest_version = version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned();
 
-        Ok(Client {
-            agent,
-            version: latest_version,
-            base_url,
-            cache_directory: self.cache,
-        })
+        Ok(Client { agent, version: latest_version, base_url, cache_directory: self.cache })
     }
 }
 
@@ -206,10 +193,7 @@ impl Client {
     /// let api = Client::with_agent_and_cache(agent, "./cache").unwrap();
     /// ```
     pub fn with_agent_and_cache(agent: Agent, cache_directory: &str) -> Result<Self, ClientError> {
-        ClientBuilder::new()
-            .agent(agent)
-            .cache(cache_directory)
-            .build()
+        ClientBuilder::new().agent(agent).cache(cache_directory).build()
     }
 
     /// Creates a new client with the specified directory as the caching location
@@ -230,62 +214,31 @@ impl Client {
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
-        self.base_url
-            .join(&format!("/cdn/{}/data/en_US/", &self.version))
+        self.base_url.join(&format!("/cdn/{}/data/en_US/", &self.version))
     }
 
     fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, ClientError> {
         let joined_url = self.get_data_url()?.join(endpoint)?;
         let request_url = joined_url.as_str();
 
-        self.agent
-            .get(request_url)
-            .call()
-            .map_err(Box::new)?
-            .into_json::<T>()
-            .map_err(|e| e.into())
+        self.agent.get(request_url).call().map_err(Box::new)?.into_json::<T>().map_err(|e| e.into())
     }
 
     create_endpoint!(challenges, "challenge", "challenges", Challenges);
     create_endpoint!(champions, "champion", "champion", Champions);
-    create_endpoint!(
-        champions_full,
-        "complete champion",
-        "championFull",
-        ChampionsFull
-    );
+    create_endpoint!(champions_full, "complete champion", "championFull", ChampionsFull);
     create_endpoint!(items, "item", "item", Items);
     create_endpoint!(maps, "map", "map", Maps);
-    create_endpoint!(
-        mission_assets,
-        "mission asset",
-        "mission-assets",
-        MissionAssets
-    );
+    create_endpoint!(mission_assets, "mission asset", "mission-assets", MissionAssets);
     create_endpoint!(profile_icons, "profile icon", "profileicon", ProfileIcons);
     create_endpoint!(runes, "rune", "runesReforged", Runes);
     create_endpoint!(spell_buffs, "spell buff", "spellbuffs", SpellBuffs);
-    create_endpoint!(
-        summoner_spells,
-        "summoner_spells",
-        "summoner",
-        SummonerSpells
-    );
+    create_endpoint!(summoner_spells, "summoner_spells", "summoner", SummonerSpells);
     create_endpoint!(translations, "translation", "language", Translations);
     create_endpoint!(tft_arenas, "TFT arena", "tft-arena", Arenas);
     create_endpoint!(tft_augments, "TFT augment", "tft-augments", Augments);
-    create_endpoint!(
-        tft_champions,
-        "TFT champion",
-        "tft-champion",
-        tft::Champions
-    );
-    create_endpoint!(
-        tft_hero_augments,
-        "TFT hero augment",
-        "tft-hero-augments",
-        HeroAugments
-    );
+    create_endpoint!(tft_champions, "TFT champion", "tft-champion", tft::Champions);
+    create_endpoint!(tft_hero_augments, "TFT hero augment", "tft-hero-augments", HeroAugments);
     create_endpoint!(tft_items, "TFT item", "tft-item", tft::Items);
     create_endpoint!(tft_queues, "TFT queue", "tft-queues", Queues);
     create_endpoint!(tft_regalia, "TFT regalia", "tft-regalia", Regalia);
@@ -331,17 +284,11 @@ impl Client {
         // we get a header telling us how many bytes we can read. If we can't,
         // using 1 as a default means parsing will always fail and produce an
         // error that can be handled elsewhere.
-        let image_size_bytes = response
-            .header("Content-Length")
-            .unwrap_or("1")
-            .parse::<u64>()
-            .unwrap_or(1);
+        let image_size_bytes =
+            response.header("Content-Length").unwrap_or("1").parse::<u64>().unwrap_or(1);
 
         let mut image_buffer: Vec<u8> = vec![];
-        response
-            .into_reader()
-            .take(image_size_bytes)
-            .read_to_end(&mut image_buffer)?;
+        response.into_reader().take(image_size_bytes).read_to_end(&mut image_buffer)?;
         let image_result = load_from_memory(&image_buffer).map_err(|e| e.into());
 
         if let Some(cache_dir) = &self.cache_directory {
