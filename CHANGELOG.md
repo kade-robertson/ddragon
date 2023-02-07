@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.7.0](https://github.com/kade-robertson/ddragon/compare/v0.6.0...v0.7.0) (2023-02-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename DDragonClient to Client
+* rename AsyncDDragonClient to AsyncClient
+* rename DDragonClientError to ClientError
+* simpler client export names ([#35](https://github.com/kade-robertson/ddragon/issues/35))
+
+### Features
+
+* add builders for API clients ([#37](https://github.com/kade-robertson/ddragon/issues/37)) ([34012e5](https://github.com/kade-robertson/ddragon/commit/34012e522e615c3669d47c583899effc3a80231d))
+* clients now derive Clone ([ab03f6a](https://github.com/kade-robertson/ddragon/commit/ab03f6ae616bc80e0a365ac441e5c15bd9a1235f))
+* support all ddragon TFT endpoints ([#38](https://github.com/kade-robertson/ddragon/issues/38)) ([57a56b2](https://github.com/kade-robertson/ddragon/commit/57a56b2a1b6df608c0c11cde9dd130f040723a0e))
+
+
+### Bug Fixes
+
+* do not improperly cache ddragon versions ([34012e5](https://github.com/kade-robertson/ddragon/commit/34012e522e615c3669d47c583899effc3a80231d))
+
+
+### Code Refactoring
+
+* rename AsyncDDragonClient to AsyncClient ([ab03f6a](https://github.com/kade-robertson/ddragon/commit/ab03f6ae616bc80e0a365ac441e5c15bd9a1235f))
+* rename DDragonClient to Client ([ab03f6a](https://github.com/kade-robertson/ddragon/commit/ab03f6ae616bc80e0a365ac441e5c15bd9a1235f))
+* rename DDragonClientError to ClientError ([ab03f6a](https://github.com/kade-robertson/ddragon/commit/ab03f6ae616bc80e0a365ac441e5c15bd9a1235f))
+* simpler client export names ([#35](https://github.com/kade-robertson/ddragon/issues/35)) ([ab03f6a](https://github.com/kade-robertson/ddragon/commit/ab03f6ae616bc80e0a365ac441e5c15bd9a1235f))
+
 ## [0.6.0](https://github.com/kade-robertson/ddragon/compare/v0.5.0...v0.6.0) (2023-02-04)
 
 
