@@ -13,11 +13,13 @@ use url::Url;
 #[cfg(test)]
 use mockito;
 
+#[cfg(feature = "image")]
+use crate::models::shared::HasImage;
+
 use crate::{
     models::{
-        champion::ChampionWrapper, shared::HasImage, tft::Arenas, Challenges, Champion, Champions,
-        ChampionsFull, Items, Maps, MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells,
-        Translations,
+        champion::ChampionWrapper, tft::Arenas, Challenges, Champion, Champions, ChampionsFull,
+        Items, Maps, MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
     },
     ClientError,
 };

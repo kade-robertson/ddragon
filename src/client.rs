@@ -10,6 +10,7 @@ use image::{load_from_memory, DynamicImage};
 #[cfg(feature = "image")]
 use std::io::Read;
 
+#[cfg(feature = "image")]
 use cacache_sync::{read as cache_read, write as cache_write};
 use serde::de::DeserializeOwned;
 use ureq::{Agent, AgentBuilder};
@@ -17,6 +18,7 @@ use url::Url;
 
 use crate::cache_middleware::CacheMiddleware;
 
+#[cfg(feature = "image")]
 use crate::models::shared::HasImage;
 use crate::models::tft::Arenas;
 use crate::{

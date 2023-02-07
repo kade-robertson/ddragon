@@ -25,6 +25,16 @@ pub trait HasImage {
     fn sprite_path(&self) -> String;
 }
 
+impl HasImage for Image {
+    fn image_path(&self) -> String {
+        self.image_path()
+    }
+
+    fn sprite_path(&self) -> String {
+        self.sprite_path()
+    }
+}
+
 macro_rules! has_image {
     ($s:ident) => {
         impl $crate::models::shared::HasImage for $s {
