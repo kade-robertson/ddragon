@@ -148,6 +148,22 @@ pub struct Client {
     cache_directory: Option<String>,
 }
 
+macro_rules! create_endpoint {
+    ($name:ident, $kind:literal, $path:literal, $ret:ty) => {
+        #[doc = concat!(" Returns ", $kind, " data.")]
+        #[doc = ""]
+        #[doc = " ```no_run"]
+        #[doc = " use ddragon::Client;"]
+        #[doc = ""]
+        #[doc = " let api = Client::new(\"./cache\").unwrap();"]
+        #[doc = concat!(" let ", stringify!($name), " = api.", stringify!($name), "().unwrap();")]
+        #[doc = " ```"]
+        pub fn $name(&self) -> Result<$ret, ClientError> {
+            self.get_data::<$ret>(concat!("./", $path, ".json"))
+        }
+    };
+}
+
 impl Client {
     #[deprecated(note = "Use `ClientBuilder::new().agent(agent).build()` instead.")]
     /// Creates a new client using a provided agent, in case you may want to
@@ -226,17 +242,33 @@ impl Client {
             .map_err(|e| e.into())
     }
 
-    /// Returns challenge data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let challenges = api.challenges().unwrap();
-    /// ```
-    pub fn challenges(&self) -> Result<Challenges, ClientError> {
-        self.get_data::<Challenges>("./challenges.json")
-    }
+    create_endpoint!(challenges, "challenge", "challenges", Challenges);
+    create_endpoint!(champions, "champion", "champion", Champions);
+    create_endpoint!(
+        champions_full,
+        "complete champion",
+        "championFull",
+        ChampionsFull
+    );
+    create_endpoint!(items, "item", "item", Items);
+    create_endpoint!(maps, "map", "map", Maps);
+    create_endpoint!(
+        mission_assets,
+        "mission asset",
+        "mission-assets",
+        MissionAssets
+    );
+    create_endpoint!(profile_icons, "profile icon", "profileicon", ProfileIcons);
+    create_endpoint!(runes, "rune", "runesReforged", Runes);
+    create_endpoint!(spell_buffs, "spell buff", "spellbuffs", SpellBuffs);
+    create_endpoint!(
+        summoner_spells,
+        "summoner_spells",
+        "summoner",
+        SummonerSpells
+    );
+    create_endpoint!(translations, "translation", "language", Translations);
+    create_endpoint!(tft_arenas, "TFT arena", "tft-arena", Arenas);
 
     /// Returns data for a single champion. The champion's name or numeric key
     /// should not be used here -- this should be the key property on the
@@ -255,138 +287,6 @@ impl Client {
             .get(key)
             .cloned()
             .ok_or(ClientError::NoChampionData)
-    }
-
-    /// Returns champion data -- short version.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let champions = api.champions().unwrap();
-    /// ```
-    pub fn champions(&self) -> Result<Champions, ClientError> {
-        self.get_data::<Champions>("./champion.json")
-    }
-
-    /// Returns champion data -- complete version.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let champions_full = api.champions_full().unwrap();
-    /// ```
-    pub fn champions_full(&self) -> Result<ChampionsFull, ClientError> {
-        self.get_data::<ChampionsFull>("./championFull.json")
-    }
-
-    /// Returns item data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let items = api.items().unwrap();
-    /// ```
-    pub fn items(&self) -> Result<Items, ClientError> {
-        self.get_data::<Items>("./item.json")
-    }
-
-    /// Returns map data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let maps = api.maps().unwrap();
-    /// ```
-    pub fn maps(&self) -> Result<Maps, ClientError> {
-        self.get_data::<Maps>("./map.json")
-    }
-
-    /// Returns mission asset data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let mission_assets = api.mission_assets().unwrap();
-    /// ```
-    pub fn mission_assets(&self) -> Result<MissionAssets, ClientError> {
-        self.get_data::<MissionAssets>("./mission-assets.json")
-    }
-
-    /// Returns profile icon data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let profile_icons = api.profile_icons().unwrap();
-    /// ```
-    pub fn profile_icons(&self) -> Result<ProfileIcons, ClientError> {
-        self.get_data::<ProfileIcons>("./profileicon.json")
-    }
-
-    /// Returns rune data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let runes = api.runes().unwrap();
-    /// ```
-    pub fn runes(&self) -> Result<Runes, ClientError> {
-        self.get_data::<Runes>("./runesReforged.json")
-    }
-
-    /// Returns spell buff data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let spell_buffs = api.spell_buffs().unwrap();
-    /// ```
-    pub fn spell_buffs(&self) -> Result<SpellBuffs, ClientError> {
-        self.get_data::<SpellBuffs>("./spellbuffs.json")
-    }
-
-    /// Returns summoner spell data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let summoner_spells = api.summoner_spells().unwrap();
-    /// ```
-    pub fn summoner_spells(&self) -> Result<SummonerSpells, ClientError> {
-        self.get_data::<SummonerSpells>("./summoner.json")
-    }
-
-    /// Returns translation data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let translations = api.translations().unwrap();
-    /// ```
-    pub fn translations(&self) -> Result<Translations, ClientError> {
-        self.get_data::<Translations>("./language.json")
-    }
-
-    /// Returns TFT arena data.
-    ///
-    /// ```no_run
-    /// use ddragon::Client;
-    ///
-    /// let api = Client::new("./cache").unwrap();
-    /// let arenas = api.tft_arenas().unwrap();
-    /// ```
-    pub fn tft_arenas(&self) -> Result<Arenas, ClientError> {
-        self.get_data::<Arenas>("./tft-arena.json")
     }
 
     #[cfg(feature = "image")]

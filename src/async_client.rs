@@ -192,6 +192,24 @@ pub struct AsyncClient {
     base_url: Url,
 }
 
+macro_rules! create_endpoint {
+    ($name:ident, $kind:literal, $path:literal, $ret:ty) => {
+        #[doc = concat!(" Returns ", $kind, " data.")]
+        #[doc = ""]
+        #[doc = " ```no_run"]
+        #[doc = " # tokio_test::block_on(async {"]
+        #[doc = " use ddragon::AsyncClient;"]
+        #[doc = ""]
+        #[doc = " let api = AsyncClient::new(\"./cache\").await.unwrap();"]
+        #[doc = concat!(" let ", stringify!($name), " = api.", stringify!($name), "().await.unwrap();")]
+        #[doc = " # })"]
+        #[doc = " ```"]
+        pub async fn $name(&self) -> Result<$ret, ClientError> {
+            self.get_data::<$ret>(concat!("./", $path, ".json")).await
+        }
+    };
+}
+
 impl AsyncClient {
     #[deprecated(
         note = "Use `AsyncClientBuilder::new().agent_with_middleware(agent).build()` instead."
@@ -264,19 +282,33 @@ impl AsyncClient {
             .map_err(|e| e.into())
     }
 
-    /// Returns challenge data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let challenges = api.challenges().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn challenges(&self) -> Result<Challenges, ClientError> {
-        self.get_data::<Challenges>("./challenges.json").await
-    }
+    create_endpoint!(challenges, "challenge", "challenges", Challenges);
+    create_endpoint!(champions, "champion", "champion", Champions);
+    create_endpoint!(
+        champions_full,
+        "complete champion",
+        "championFull",
+        ChampionsFull
+    );
+    create_endpoint!(items, "item", "item", Items);
+    create_endpoint!(maps, "map", "map", Maps);
+    create_endpoint!(
+        mission_assets,
+        "mission asset",
+        "mission-assets",
+        MissionAssets
+    );
+    create_endpoint!(profile_icons, "profile icon", "profileicon", ProfileIcons);
+    create_endpoint!(runes, "rune", "runesReforged", Runes);
+    create_endpoint!(spell_buffs, "spell buff", "spellbuffs", SpellBuffs);
+    create_endpoint!(
+        summoner_spells,
+        "summoner_spells",
+        "summoner",
+        SummonerSpells
+    );
+    create_endpoint!(translations, "translation", "language", Translations);
+    create_endpoint!(tft_arenas, "TFT arena", "tft-arena", Arenas);
 
     /// Returns data for a single champion. The champion's name or numeric key
     /// should not be used here -- this should be the key property on the
@@ -298,161 +330,6 @@ impl AsyncClient {
             .get(key)
             .cloned()
             .ok_or(ClientError::NoChampionData)
-    }
-
-    /// Returns champion data -- short version.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let champions = api.champions().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn champions(&self) -> Result<Champions, ClientError> {
-        self.get_data::<Champions>("./champion.json").await
-    }
-
-    /// Returns champion data -- complete version.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let champions_full = api.champions_full().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn champions_full(&self) -> Result<ChampionsFull, ClientError> {
-        self.get_data::<ChampionsFull>("./championFull.json").await
-    }
-
-    /// Returns item data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let items = api.items().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn items(&self) -> Result<Items, ClientError> {
-        self.get_data::<Items>("./item.json").await
-    }
-
-    /// Returns map data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let maps = api.maps().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn maps(&self) -> Result<Maps, ClientError> {
-        self.get_data::<Maps>("./map.json").await
-    }
-
-    /// Returns mission asset data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let mission_assets = api.mission_assets().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn mission_assets(&self) -> Result<MissionAssets, ClientError> {
-        self.get_data::<MissionAssets>("./mission-assets.json")
-            .await
-    }
-
-    /// Returns profile icon data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let profile_icons = api.profile_icons().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn profile_icons(&self) -> Result<ProfileIcons, ClientError> {
-        self.get_data::<ProfileIcons>("./profileicon.json").await
-    }
-
-    /// Returns rune data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let runes = api.runes().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn runes(&self) -> Result<Runes, ClientError> {
-        self.get_data::<Runes>("./runesReforged.json").await
-    }
-
-    /// Returns spell buff data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let spell_buffs = api.spell_buffs().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn spell_buffs(&self) -> Result<SpellBuffs, ClientError> {
-        self.get_data::<SpellBuffs>("./spellbuffs.json").await
-    }
-
-    /// Returns summoner spell data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let summoner_spells = api.summoner_spells().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn summoner_spells(&self) -> Result<SummonerSpells, ClientError> {
-        self.get_data::<SummonerSpells>("./summoner.json").await
-    }
-
-    /// Returns translation data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let translations = api.translations().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn translations(&self) -> Result<Translations, ClientError> {
-        self.get_data::<Translations>("./language.json").await
-    }
-
-    /// Returns TFT arena data.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let api = AsyncClient::new("./cache").await.unwrap();
-    /// let arenas = api.tft_arenas().await.unwrap();
-    /// # })
-    /// ```
-    pub async fn tft_arenas(&self) -> Result<Arenas, ClientError> {
-        self.get_data::<Arenas>("./tft-arena.json").await
     }
 
     #[cfg(feature = "image")]
