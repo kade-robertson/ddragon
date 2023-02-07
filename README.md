@@ -2,9 +2,10 @@
 
 [![latest version](https://img.shields.io/crates/v/ddragon?style=flat-square)](https://crates.io/crates/ddragon) [![health check status](https://img.shields.io/github/actions/workflow/status/kade-robertson/ddragon/health.yml?label=health&style=flat-square)](https://github.com/kade-robertson/ddragon/actions/workflows/health.yml) [![downloads of latest version](https://img.shields.io/crates/d/ddragon?style=flat-square)](https://crates.io/crates/ddragon) [![latest docs](https://img.shields.io/docsrs/ddragon?style=flat-square)](https://docs.rs/ddragon/latest/ddragon/)
 
-Rust library for accessing the latest LoL patch's ddragon data.
+Rust library for accessing the latest League of Legends patch's ddragon data.
 
-- Full JSON deserialization via `serde_json`
+- Fully (de)serializable, well-typed structs
+- Supports TFT data
 - Provides a synchronous API by default
   - Local caching via `cacache-sync`
   - Accepts custom `ureq` agents (which can use the exposed cache middleware)
@@ -30,6 +31,7 @@ fn main() -> Result<(), ClientError> {
     // See available options on the client and in the models folder.
     let champions = client.champions()?;
     let runes = client.runes()?;
+    let tft_items = client.tft_items()?;
 
     Ok(())
 }
@@ -78,11 +80,3 @@ If you only want the DDragon models (none of the client code), you can use
 [dependencies]
 ddragon = { version = "<version>", default-features = false }
 ```
-
-## Roadmap
-
-- [x] Support all `.json` endpoints related to League of Legends
-- [ ] Support endpoints related to Teamfight Tactics
-- [x] Add additional helpers for obtaining image assets
-- [x] Add an async API using `reqwest` as the backend
-- [ ] Improve docs

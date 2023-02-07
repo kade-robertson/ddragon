@@ -10,6 +10,7 @@ pub mod runes;
 pub mod shared;
 pub mod spell_buffs;
 pub mod summoner_spells;
+pub mod tft;
 pub mod translations;
 
 pub use challenges::Challenges;

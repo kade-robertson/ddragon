@@ -25,6 +25,16 @@ pub trait HasImage {
     fn sprite_path(&self) -> String;
 }
 
+impl HasImage for Image {
+    fn image_path(&self) -> String {
+        self.image_path()
+    }
+
+    fn sprite_path(&self) -> String {
+        self.sprite_path()
+    }
+}
+
 macro_rules! has_image {
     ($s:ident) => {
         impl $crate::models::shared::HasImage for $s {
@@ -38,3 +48,12 @@ macro_rules! has_image {
     };
 }
 pub(crate) use has_image;
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct BasicDatum {
+    pub id: String,
+    pub name: String,
+    pub image: Image,
+}
+
+has_image!(BasicDatum);
