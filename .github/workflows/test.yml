@@ -16,7 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: dtolnay/rust-toolchain@master
+      - id: toolchain
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
           components: rustfmt
@@ -31,8 +32,8 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/            
-          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
+          key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
 
       - name: Install tools
         run: |

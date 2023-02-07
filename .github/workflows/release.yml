@@ -11,7 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: dtolnay/rust-toolchain@stable
+      - id: toolchain
+        uses: dtolnay/rust-toolchain@master
 
       - name: Cargo cache
         uses: actions/cache@v3
@@ -23,8 +24,8 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/            
-          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
+          key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
 
       - name: Publish
         uses: katyo/publish-crates@v1
