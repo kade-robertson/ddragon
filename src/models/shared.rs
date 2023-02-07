@@ -48,3 +48,12 @@ macro_rules! has_image {
     };
 }
 pub(crate) use has_image;
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct BasicDatum {
+    pub id: String,
+    pub name: String,
+    pub image: Image,
+}
+
+has_image!(BasicDatum);

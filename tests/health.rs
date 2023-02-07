@@ -29,6 +29,13 @@ fn health_check() {
     let translations = client.translations().unwrap();
     let tft_arenas = client.tft_arenas().unwrap();
     let tft_augments = client.tft_augments().unwrap();
+    let tft_champions = client.tft_champions().unwrap();
+    let tft_hero_augments = client.tft_hero_augments().unwrap();
+    let tft_items = client.tft_items().unwrap();
+    let tft_queues = client.tft_queues().unwrap();
+    let tft_regalia = client.tft_regalia().unwrap();
+    let tft_tacticians = client.tft_tacticians().unwrap();
+    let tft_traits = client.tft_traits().unwrap();
     let uncached_duration = uncached_start.elapsed();
 
     let cached_start = Instant::now();
@@ -48,6 +55,13 @@ fn health_check() {
     let cached_translations = client.translations().unwrap();
     let cached_tft_arenas = client.tft_arenas().unwrap();
     let cached_tft_augments = client.tft_augments().unwrap();
+    let cached_tft_champions = client.tft_champions().unwrap();
+    let cached_tft_hero_augments = client.tft_hero_augments().unwrap();
+    let cached_tft_items = client.tft_items().unwrap();
+    let cached_tft_queues = client.tft_queues().unwrap();
+    let cached_tft_regalia = client.tft_regalia().unwrap();
+    let cached_tft_tacticians = client.tft_tacticians().unwrap();
+    let cached_tft_traits = client.tft_traits().unwrap();
     let cached_duration = cached_start.elapsed();
 
     println!();
@@ -71,6 +85,13 @@ fn health_check() {
     assert_eq!(translations, cached_translations);
     assert_eq!(tft_arenas, cached_tft_arenas);
     assert_eq!(tft_augments, cached_tft_augments);
+    assert_eq!(tft_champions, cached_tft_champions);
+    assert_eq!(tft_hero_augments, cached_tft_hero_augments);
+    assert_eq!(tft_items, cached_tft_items);
+    assert_eq!(tft_queues, cached_tft_queues);
+    assert_eq!(tft_regalia, cached_tft_regalia);
+    assert_eq!(tft_tacticians, cached_tft_tacticians);
+    assert_eq!(tft_traits, cached_tft_traits);
 }
 
 #[cfg(feature = "async")]
@@ -104,6 +125,13 @@ fn async_health_check() {
     let translations = block_on(client.translations()).unwrap();
     let tft_arenas = block_on(client.tft_arenas()).unwrap();
     let tft_augments = block_on(client.tft_augments()).unwrap();
+    let tft_champions = block_on(client.tft_champions()).unwrap();
+    let tft_hero_augments = block_on(client.tft_hero_augments()).unwrap();
+    let tft_items = block_on(client.tft_items()).unwrap();
+    let tft_queues = block_on(client.tft_queues()).unwrap();
+    let tft_regalia = block_on(client.tft_regalia()).unwrap();
+    let tft_tacticians = block_on(client.tft_tacticians()).unwrap();
+    let tft_traits = block_on(client.tft_traits()).unwrap();
     let uncached_duration = uncached_start.elapsed();
 
     let cached_start = Instant::now();
@@ -123,6 +151,13 @@ fn async_health_check() {
     let cached_translations = block_on(client.translations()).unwrap();
     let cached_tft_arenas = block_on(client.tft_arenas()).unwrap();
     let cached_tft_augments = block_on(client.tft_augments()).unwrap();
+    let cached_tft_champions = block_on(client.tft_champions()).unwrap();
+    let cached_tft_hero_augments = block_on(client.tft_hero_augments()).unwrap();
+    let cached_tft_items = block_on(client.tft_items()).unwrap();
+    let cached_tft_queues = block_on(client.tft_queues()).unwrap();
+    let cached_tft_regalia = block_on(client.tft_regalia()).unwrap();
+    let cached_tft_tacticians = block_on(client.tft_tacticians()).unwrap();
+    let cached_tft_traits = block_on(client.tft_traits()).unwrap();
     let cached_duration = cached_start.elapsed();
 
     println!();
@@ -146,4 +181,11 @@ fn async_health_check() {
     assert_eq!(translations, cached_translations);
     assert_eq!(tft_arenas, cached_tft_arenas);
     assert_eq!(tft_augments, cached_tft_augments);
+    assert_eq!(tft_champions, cached_tft_champions);
+    assert_eq!(tft_hero_augments, cached_tft_hero_augments);
+    assert_eq!(tft_items, cached_tft_items);
+    assert_eq!(tft_queues, cached_tft_queues);
+    assert_eq!(tft_regalia, cached_tft_regalia);
+    assert_eq!(tft_tacticians, cached_tft_tacticians);
+    assert_eq!(tft_traits, cached_tft_traits);
 }

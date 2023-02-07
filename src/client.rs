@@ -20,7 +20,9 @@ use crate::cache_middleware::CacheMiddleware;
 
 #[cfg(feature = "image")]
 use crate::models::shared::HasImage;
-use crate::models::tft::{Arenas, Augments};
+use crate::models::tft::{
+    self, Arenas, Augments, HeroAugments, Queues, Regalia, Tacticians, Traits,
+};
 use crate::{
     models::{
         champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
@@ -272,6 +274,23 @@ impl Client {
     create_endpoint!(translations, "translation", "language", Translations);
     create_endpoint!(tft_arenas, "TFT arena", "tft-arena", Arenas);
     create_endpoint!(tft_augments, "TFT augment", "tft-augments", Augments);
+    create_endpoint!(
+        tft_champions,
+        "TFT champion",
+        "tft-champion",
+        tft::Champions
+    );
+    create_endpoint!(
+        tft_hero_augments,
+        "TFT hero augment",
+        "tft-hero-augments",
+        HeroAugments
+    );
+    create_endpoint!(tft_items, "TFT item", "tft-item", tft::Items);
+    create_endpoint!(tft_queues, "TFT queue", "tft-queues", Queues);
+    create_endpoint!(tft_regalia, "TFT regalia", "tft-regalia", Regalia);
+    create_endpoint!(tft_tacticians, "TFT tactician", "tft-tactician", Tacticians);
+    create_endpoint!(tft_traits, "TFT trait", "tft-trait", Traits);
 
     /// Returns data for a single champion. The champion's name or numeric key
     /// should not be used here -- this should be the key property on the

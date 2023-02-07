@@ -1,5 +1,19 @@
-pub mod arena;
-pub mod augment;
+pub mod arenas;
+pub mod augments;
+pub mod champions;
+pub mod hero_augments;
+pub mod items;
+pub mod queues;
+pub mod regalia;
+pub mod tactitians;
+pub mod traits;
 
-pub use arena::Arenas;
-pub use augment::Augments;
+pub use arenas::Arenas;
+pub use augments::Augments;
+pub use champions::Champions;
+pub use hero_augments::HeroAugments;
+pub use items::Items;
+pub use queues::Queues;
+pub use regalia::Regalia;
+pub use tactitians::Tacticians;
+pub use traits::Traits;
