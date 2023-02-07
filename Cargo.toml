@@ -7,7 +7,7 @@ description = "Library for pulling data from ddragon, with caching support."
 homepage = "https://github.com/kade-robertson/ddragon"
 repository = "https://github.com/kade-robertson/ddragon"
 readme = "./README.md"
-keywords = ["ddragon", "league-of-legends", "lol", "league", "legends"]
+keywords = ["ddragon", "league-of-legends", "lol", "teamfight-tactics", "tft"]
 categories = ["api-bindings"]
 
 [dependencies]
