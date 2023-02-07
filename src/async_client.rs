@@ -18,8 +18,10 @@ use crate::models::shared::HasImage;
 
 use crate::{
     models::{
-        champion::ChampionWrapper, tft::Arenas, Challenges, Champion, Champions, ChampionsFull,
-        Items, Maps, MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
+        champion::ChampionWrapper,
+        tft::{Arenas, Augments},
+        Challenges, Champion, Champions, ChampionsFull, Items, Maps, MissionAssets, ProfileIcons,
+        Runes, SpellBuffs, SummonerSpells, Translations,
     },
     ClientError,
 };
@@ -311,6 +313,7 @@ impl AsyncClient {
     );
     create_endpoint!(translations, "translation", "language", Translations);
     create_endpoint!(tft_arenas, "TFT arena", "tft-arena", Arenas);
+    create_endpoint!(tft_augments, "TFT augment", "tft-augments", Augments);
 
     /// Returns data for a single champion. The champion's name or numeric key
     /// should not be used here -- this should be the key property on the
