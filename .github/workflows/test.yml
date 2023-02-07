@@ -48,4 +48,7 @@ jobs:
           cargo outdated --exit-code 1
 
       - name: Test
-        run: cargo test --all-features -- --test-threads 1 --nocapture
+        run: |
+          cargo test --all-features --lib -- --test-threads 1
+          cargo test --all-features --doc
+          cargo test --all-features --release -- --test health --nocapture

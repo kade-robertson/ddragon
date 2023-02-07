@@ -36,4 +36,4 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
 
       - name: Health Check
-        run: cargo test --all-features -- --test health --test-threads 1 --nocapture
+        run: cargo test --all-features --release -- --test health --nocapture
