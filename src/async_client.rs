@@ -93,10 +93,7 @@ pub struct AsyncClientBuilder {
 impl AsyncClientBuilder {
     /// Creates an [AsyncClientBuilder] with no default options set.
     pub fn new() -> Self {
-        Self {
-            agent: None,
-            cache: None,
-        }
+        Self { agent: None, cache: None }
     }
 
     /// Configures a custom [ClientWithMiddleware] for making network requests.
@@ -154,10 +151,7 @@ impl AsyncClientBuilder {
             }
         };
 
-        let latest_version = version_list
-            .get(0)
-            .ok_or(ClientError::NoLatestVersion)?
-            .to_owned();
+        let latest_version = version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned();
 
         let middleware_agent = match agent {
             ClientAgent::Plain(plain_agent) => match self.cache {
@@ -173,11 +167,7 @@ impl AsyncClientBuilder {
             ClientAgent::Middleware(middleware_agent) => middleware_agent,
         };
 
-        Ok(AsyncClient {
-            agent: middleware_agent,
-            version: latest_version,
-            base_url,
-        })
+        Ok(AsyncClient { agent: middleware_agent, version: latest_version, base_url })
     }
 }
 
@@ -232,10 +222,7 @@ impl AsyncClient {
     /// # })
     /// ```
     pub async fn with_agent(agent: ClientWithMiddleware) -> Result<Self, ClientError> {
-        AsyncClientBuilder::new()
-            .agent_with_middleware(agent)
-            .build()
-            .await
+        AsyncClientBuilder::new().agent_with_middleware(agent).build().await
     }
 
     #[deprecated(note = "Use `AsyncClientBuilder::new().agent(agent).build()` instead.")]
@@ -269,63 +256,31 @@ impl AsyncClient {
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
-        self.base_url
-            .join(&format!("/cdn/{}/data/en_US/", &self.version))
+        self.base_url.join(&format!("/cdn/{}/data/en_US/", &self.version))
     }
 
     async fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, ClientError> {
         let joined_url = self.get_data_url()?.join(endpoint)?;
         let request_url = joined_url.as_str();
 
-        self.agent
-            .get(request_url)
-            .send()
-            .await?
-            .json::<T>()
-            .await
-            .map_err(|e| e.into())
+        self.agent.get(request_url).send().await?.json::<T>().await.map_err(|e| e.into())
     }
 
     create_endpoint!(challenges, "challenge", "challenges", Challenges);
     create_endpoint!(champions, "champion", "champion", Champions);
-    create_endpoint!(
-        champions_full,
-        "complete champion",
-        "championFull",
-        ChampionsFull
-    );
+    create_endpoint!(champions_full, "complete champion", "championFull", ChampionsFull);
     create_endpoint!(items, "item", "item", Items);
     create_endpoint!(maps, "map", "map", Maps);
-    create_endpoint!(
-        mission_assets,
-        "mission asset",
-        "mission-assets",
-        MissionAssets
-    );
+    create_endpoint!(mission_assets, "mission asset", "mission-assets", MissionAssets);
     create_endpoint!(profile_icons, "profile icon", "profileicon", ProfileIcons);
     create_endpoint!(runes, "rune", "runesReforged", Runes);
     create_endpoint!(spell_buffs, "spell buff", "spellbuffs", SpellBuffs);
-    create_endpoint!(
-        summoner_spells,
-        "summoner_spells",
-        "summoner",
-        SummonerSpells
-    );
+    create_endpoint!(summoner_spells, "summoner_spells", "summoner", SummonerSpells);
     create_endpoint!(translations, "translation", "language", Translations);
     create_endpoint!(tft_arenas, "TFT arena", "tft-arena", Arenas);
     create_endpoint!(tft_augments, "TFT augment", "tft-augments", Augments);
-    create_endpoint!(
-        tft_champions,
-        "TFT champion",
-        "tft-champion",
-        tft::Champions
-    );
-    create_endpoint!(
-        tft_hero_augments,
-        "TFT hero augment",
-        "tft-hero-augments",
-        HeroAugments
-    );
+    create_endpoint!(tft_champions, "TFT champion", "tft-champion", tft::Champions);
+    create_endpoint!(tft_hero_augments, "TFT hero augment", "tft-hero-augments", HeroAugments);
     create_endpoint!(tft_items, "TFT item", "tft-item", tft::Items);
     create_endpoint!(tft_queues, "TFT queue", "tft-queues", Queues);
     create_endpoint!(tft_regalia, "TFT regalia", "tft-regalia", Regalia);

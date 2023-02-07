@@ -13,9 +13,7 @@ impl CacheMiddleware {
     /// files to go in specified. Cache file structure beyond that is dictated
     /// by `cacache`.
     pub fn new(directory: &str) -> Self {
-        Self {
-            directory: directory.to_owned(),
-        }
+        Self { directory: directory.to_owned() }
     }
 }
 
@@ -57,10 +55,7 @@ mod tests {
 
     #[test]
     fn first_request_creates_cache() {
-        let _m = mock("GET", "/file.txt")
-            .with_status(200)
-            .with_body("some example text")
-            .create();
+        let _m = mock("GET", "/file.txt").with_status(200).with_body("some example text").create();
 
         let full_url = format!("{}/file.txt", mockito::server_url());
 
@@ -88,19 +83,13 @@ mod tests {
             .middleware(CacheMiddleware::new(&cache_dir.to_string_lossy()))
             .build();
 
-        let _m = mock("GET", "/file.txt")
-            .with_status(200)
-            .with_body("some example text")
-            .create();
+        let _m = mock("GET", "/file.txt").with_status(200).with_body("some example text").create();
 
         let _ = agent.get(&full_url).call().unwrap();
 
         // Removes the previous mock so this URL shouldn't work.
         mockito::reset();
-        assert!(agent
-            .get(&format!("{}/other-file.txt", mockito::server_url()))
-            .call()
-            .is_err());
+        assert!(agent.get(&format!("{}/other-file.txt", mockito::server_url())).call().is_err());
 
         let response = agent.get(&full_url).call().unwrap();
         assert_eq!(response.status(), 200);
