@@ -13,6 +13,8 @@ jobs:
 
       - id: toolchain
         uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
 
       - name: Cargo cache
         uses: actions/cache@v3
