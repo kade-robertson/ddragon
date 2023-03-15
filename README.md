@@ -7,7 +7,7 @@ Rust library for accessing the latest League of Legends patch's ddragon data.
 - Fully (de)serializable, well-typed structs
 - Supports TFT data
 - Provides a synchronous API by default
-  - Local caching via `cacache-sync`
+  - Local caching via `cacache`
   - Accepts custom `ureq` agents (which can use the exposed cache middleware)
 - Optionally, an asynchronous API can be used that maintains the same featureset
   - Local caching is handled by `http-cache-reqwest` rather than a custom middleware
