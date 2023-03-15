@@ -11,7 +11,7 @@ use image::{load_from_memory, DynamicImage};
 use std::io::Read;
 
 #[cfg(feature = "image")]
-use cacache_sync::{read as cache_read, write as cache_write};
+use cacache::{read_sync as cache_read, write_sync as cache_write};
 use serde::de::DeserializeOwned;
 use ureq::{Agent, AgentBuilder};
 use url::Url;

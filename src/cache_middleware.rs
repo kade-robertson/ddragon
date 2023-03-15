@@ -30,7 +30,7 @@ impl Middleware for CacheMiddleware {
 
         let cache_key = request.url().to_owned();
 
-        if let Ok(data) = cacache_sync::read(&self.directory, &cache_key) {
+        if let Ok(data) = cacache::read_sync(&self.directory, &cache_key) {
             return Response::new(200, "OK", &String::from_utf8_lossy(&data));
         }
 
@@ -40,7 +40,7 @@ impl Middleware for CacheMiddleware {
         }
 
         let response_str = response.into_string()?;
-        let _ = cacache_sync::write(&self.directory, &cache_key, response_str.clone());
+        let _ = cacache::write_sync(&self.directory, &cache_key, response_str.clone());
 
         Response::new(200, "OK", &response_str)
     }
