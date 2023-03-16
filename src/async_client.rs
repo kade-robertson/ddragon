@@ -34,6 +34,7 @@ enum ClientAgent {
 
 /// Used for building an [AsyncClient] with custom options.
 pub struct AsyncClientBuilder {
+    server: String,
     agent: Option<ClientAgent>,
     cache: Option<String>,
 }
@@ -93,7 +94,7 @@ pub struct AsyncClientBuilder {
 impl AsyncClientBuilder {
     /// Creates an [AsyncClientBuilder] with no default options set.
     pub fn new() -> Self {
-        Self { agent: None, cache: None }
+        Self { server: "https://ddragon.leagueoflegends.com".to_owned(), agent: None, cache: None }
     }
 
     /// Configures a custom [ClientWithMiddleware] for making network requests.
@@ -116,6 +117,12 @@ impl AsyncClientBuilder {
         self
     }
 
+    #[cfg(test)]
+    fn server(mut self, server: &str) -> Self {
+        self.server = server.to_owned();
+        self
+    }
+
     /// Creates a new [AsyncClient] instance with the configured options.
     ///
     /// # Notes
@@ -128,11 +135,7 @@ impl AsyncClientBuilder {
             None => ClientAgent::Plain(Client::new()),
         };
 
-        #[cfg(not(test))]
-        let base_url = Url::parse("https://ddragon.leagueoflegends.com")?;
-
-        #[cfg(test)]
-        let base_url = Url::parse(&mockito::server_url())?;
+        let base_url = Url::parse(&self.server)?;
 
         let version_list = match agent.clone() {
             ClientAgent::Plain(a) => {
@@ -372,118 +375,141 @@ impl AsyncClient {
 #[cfg(test)]
 mod test {
     use super::*;
-    use mockito::mock;
-    use tokio_test::block_on;
+    use mockito::{Server, ServerGuard};
 
-    impl Default for AsyncClient {
-        fn default() -> Self {
-            Self {
+    async fn create_mock_client() -> (ServerGuard, String, AsyncClient) {
+        let server = Server::new_async().await;
+        let url = server.url();
+        (
+            server,
+            url.clone(),
+            AsyncClient {
                 agent: MiddlewareClientBuilder::new(Client::new()).build(),
                 version: "0.0.0".to_owned(),
-                base_url: Url::parse(&mockito::server_url()).unwrap(),
-            }
-        }
+                base_url: Url::parse(&url).unwrap(),
+            },
+        )
     }
 
     mod create {
         use super::*;
 
-        #[test]
-        fn result_ok_if_at_least_one_version() {
-            let _mock = mock("GET", "/api/versions.json")
+        #[tokio::test]
+        async fn result_ok_if_at_least_one_version() {
+            let mut server = Server::new_async().await;
+            let _mock = server
+                .mock("GET", "/api/versions.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"["0.0.0"]"#)
-                .create();
+                .create_async()
+                .await;
 
-            let maybe_client = block_on(AsyncClientBuilder::new().build());
+            let maybe_client = AsyncClientBuilder::new().server(&server.url()).build().await;
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
         }
 
-        #[test]
-        fn result_ok_first_version_in_list() {
-            let _mock = mock("GET", "/api/versions.json")
+        #[tokio::test]
+        async fn result_ok_first_version_in_list() {
+            let mut server = Server::new_async().await;
+            let _mock = server
+                .mock("GET", "/api/versions.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
-                .create();
+                .create_async()
+                .await;
 
-            let maybe_client = block_on(AsyncClientBuilder::new().build());
+            let maybe_client = AsyncClientBuilder::new().server(&server.url()).build().await;
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
         }
 
-        #[test]
-        fn result_err_server_unavailable() {
-            assert!(block_on(AsyncClientBuilder::new().build()).is_err());
+        #[tokio::test]
+        async fn result_err_server_unavailable() {
+            assert!(AsyncClientBuilder::new()
+                .server("https://dead-server.notadomain")
+                .build()
+                .await
+                .is_err());
         }
 
-        #[test]
-        fn result_err_no_versions_in_list() {
-            let _mock = mock("GET", "/api/versions.json")
+        #[tokio::test]
+        async fn result_err_no_versions_in_list() {
+            let mut server = Server::new_async().await;
+            let _mock = server
+                .mock("GET", "/api/versions.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"[]"#)
-                .create();
+                .create_async()
+                .await;
 
-            assert!(block_on(AsyncClientBuilder::new().build()).is_err());
+            assert!(AsyncClientBuilder::new().server(&server.url()).build().await.is_err());
         }
 
-        #[test]
-        fn result_err_cannot_deserialize() {
-            let _mock = mock("GET", "/api/versions.json")
+        #[tokio::test]
+        async fn result_err_cannot_deserialize() {
+            let mut server = Server::new_async().await;
+            let _mock = server
+                .mock("GET", "/api/versions.json")
                 .with_status(200)
                 .with_body(r#"some non-deserializable content"#)
-                .create();
+                .create_async()
+                .await;
 
-            assert!(block_on(AsyncClientBuilder::new().build()).is_err());
+            assert!(AsyncClientBuilder::new().server(&server.url()).build().await.is_err());
         }
     }
 
     mod requests {
         use super::*;
 
-        #[test]
-        fn get_data_url_constructs_expected_baseurl() {
-            let client = AsyncClient::default();
+        #[tokio::test]
+        async fn get_data_url_constructs_expected_baseurl() {
+            let (_server, url, client) = create_mock_client().await;
             assert_eq!(
                 client.get_data_url().unwrap().as_str(),
-                format!("{}/cdn/0.0.0/data/en_US/", mockito::server_url())
+                format!("{}/cdn/0.0.0/data/en_US/", url)
             );
         }
 
-        #[test]
-        fn get_data_err_if_server_unavailable() {
-            let client = AsyncClient::default();
-            assert!(block_on(client.get_data::<String>("/fake-endpoint")).is_err());
+        #[tokio::test]
+        async fn get_data_err_if_server_unavailable() {
+            let (_server, _url, client) = create_mock_client().await;
+            assert!(client.get_data::<String>("/fake-endpoint").await.is_err());
         }
 
-        #[test]
-        fn get_data_err_if_data_not_deserializable() {
-            let _mock = mock("GET", "/cdn/0.0.0/data/en_US/data.json")
+        #[tokio::test]
+        async fn get_data_err_if_data_not_deserializable() {
+            let (mut server, _url, client) = create_mock_client().await;
+            let _mock = server
+                .mock("GET", "/cdn/0.0.0/data/en_US/data.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"no chance to deserialize this"#)
-                .create();
+                .create_async()
+                .await;
 
-            let client = AsyncClient::default();
-            assert!(block_on(client.get_data::<String>("./data.json")).is_err());
+            assert!(client.get_data::<String>("./data.json").await.is_err());
         }
 
-        #[test]
-        fn get_data_ok_deserializes_to_type() {
-            let _mock = mock("GET", "/cdn/0.0.0/data/en_US/data.json")
+        #[tokio::test]
+        async fn get_data_ok_deserializes_to_type() {
+            let (mut server, _url, client) = create_mock_client().await;
+            let _mock = server
+                .mock("GET", "/cdn/0.0.0/data/en_US/data.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"["value"]"#)
-                .create();
+                .create_async()
+                .await;
 
-            let client = AsyncClient::default();
             assert_eq!(
-                block_on(client.get_data::<Vec<String>>("./data.json")).unwrap(),
+                client.get_data::<Vec<String>>("./data.json").await.unwrap(),
                 vec!["value".to_owned()]
             );
         }
