@@ -11,7 +11,7 @@ use image::{load_from_memory, DynamicImage};
 use std::io::Read;
 
 #[cfg(feature = "image")]
-use cacache_sync::{read as cache_read, write as cache_write};
+use cacache::{read_sync as cache_read, write_sync as cache_write};
 use serde::de::DeserializeOwned;
 use ureq::{Agent, AgentBuilder};
 use url::Url;
@@ -33,6 +33,7 @@ use crate::{
 
 /// Used for building a [Client] with custom options.
 pub struct ClientBuilder {
+    server: String,
     agent: Option<Agent>,
     cache: Option<String>,
 }
@@ -72,7 +73,7 @@ pub struct ClientBuilder {
 impl ClientBuilder {
     /// Creates a [ClientBuilder] with no default options set.
     pub fn new() -> Self {
-        Self { agent: None, cache: None }
+        Self { server: "https://ddragon.leagueoflegends.com".to_owned(), agent: None, cache: None }
     }
 
     /// Configures a custom [Agent] for making network requests.
@@ -84,6 +85,12 @@ impl ClientBuilder {
     /// Configures the cache directory to use for anything that gets downlaoded.
     pub fn cache(mut self, cache_dir: &str) -> Self {
         self.cache = Some(cache_dir.to_owned());
+        self
+    }
+
+    #[cfg(test)]
+    pub fn server(mut self, server: &str) -> Self {
+        self.server = server.to_owned();
         self
     }
 
@@ -105,12 +112,7 @@ impl ClientBuilder {
             },
         };
 
-        #[cfg(not(test))]
-        let base_url = Url::parse("https://ddragon.leagueoflegends.com")?;
-
-        #[cfg(test)]
-        let base_url = Url::parse(&mockito::server_url())?;
-
+        let base_url = Url::parse(&self.server)?;
         let version_list = agent
             .get(base_url.join("/api/versions.json")?.as_str())
             .call()
@@ -206,11 +208,6 @@ impl Client {
     /// ```
     pub fn new(cache_dir: &str) -> Result<Self, ClientError> {
         ClientBuilder::new().cache(cache_dir).build()
-    }
-
-    #[cfg(test)]
-    fn new_no_cache() -> Result<Self, ClientError> {
-        ClientBuilder::new().build()
     }
 
     fn get_data_url(&self) -> Result<Url, url::ParseError> {
@@ -343,17 +340,21 @@ impl Client {
 #[cfg(test)]
 mod test {
     use super::*;
-    use mockito::mock;
+    use mockito::{Server, ServerGuard};
 
-    impl Default for Client {
-        fn default() -> Self {
-            Self {
+    fn create_mock_client() -> (ServerGuard, String, Client) {
+        let server = Server::new();
+        let url = server.url();
+        (
+            server,
+            url.clone(),
+            Client {
                 agent: ureq::Agent::new(),
                 version: "0.0.0".to_owned(),
-                base_url: Url::parse(&mockito::server_url()).unwrap(),
+                base_url: Url::parse(&url).unwrap(),
                 cache_directory: None,
-            }
-        }
+            },
+        )
     }
 
     mod create {
@@ -361,13 +362,15 @@ mod test {
 
         #[test]
         fn result_ok_if_at_least_one_version() {
-            let _mock = mock("GET", "/api/versions.json")
+            let mut server = Server::new();
+            let _mock = server
+                .mock("GET", "/api/versions.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"["0.0.0"]"#)
                 .create();
 
-            let maybe_client = Client::new_no_cache();
+            let maybe_client = ClientBuilder::new().server(&server.url()).build();
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -375,13 +378,15 @@ mod test {
 
         #[test]
         fn result_ok_first_version_in_list() {
-            let _mock = mock("GET", "/api/versions.json")
+            let mut server = Server::new();
+            let _mock = server
+                .mock("GET", "/api/versions.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
                 .create();
 
-            let maybe_client = Client::new_no_cache();
+            let maybe_client = ClientBuilder::new().server(&server.url()).build();
 
             assert!(maybe_client.is_ok());
             assert_eq!(maybe_client.unwrap().version, "0.0.0");
@@ -389,28 +394,32 @@ mod test {
 
         #[test]
         fn result_err_server_unavailable() {
-            assert!(Client::new_no_cache().is_err());
+            assert!(ClientBuilder::new().server("https://a-very-fake.urltogoto").build().is_err());
         }
 
         #[test]
         fn result_err_no_versions_in_list() {
-            let _mock = mock("GET", "/api/versions.json")
+            let mut server = Server::new();
+            let _mock = server
+                .mock("GET", "/api/versions.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"[]"#)
                 .create();
 
-            assert!(Client::new_no_cache().is_err());
+            assert!(ClientBuilder::new().server(&server.url()).build().is_err());
         }
 
         #[test]
         fn result_err_cannot_deserialize() {
-            let _mock = mock("GET", "/api/versions.json")
+            let mut server = Server::new();
+            let _mock = server
+                .mock("GET", "/api/versions.json")
                 .with_status(200)
                 .with_body(r#"some non-deserializable content"#)
                 .create();
 
-            assert!(Client::new_no_cache().is_err());
+            assert!(ClientBuilder::new().server(&server.url()).build().is_err());
         }
     }
 
@@ -419,40 +428,42 @@ mod test {
 
         #[test]
         fn get_data_url_constructs_expected_baseurl() {
-            let client = Client::default();
+            let (_server, url, client) = create_mock_client();
             assert_eq!(
                 client.get_data_url().unwrap().as_str(),
-                format!("{}/cdn/0.0.0/data/en_US/", mockito::server_url())
+                format!("{}/cdn/0.0.0/data/en_US/", url)
             );
         }
 
         #[test]
         fn get_data_err_if_server_unavailable() {
-            let client = Client::default();
+            let (_server, _url, client) = create_mock_client();
             assert!(client.get_data::<String>("/fake-endpoint").is_err());
         }
 
         #[test]
         fn get_data_err_if_data_not_deserializable() {
-            let _mock = mock("GET", "/cdn/0.0.0/data/en_US/data.json")
+            let (mut server, _url, client) = create_mock_client();
+            let _mock = server
+                .mock("GET", "/cdn/0.0.0/data/en_US/data.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"no chance to deserialize this"#)
                 .create();
 
-            let client = Client::default();
             assert!(client.get_data::<String>("./data.json").is_err());
         }
 
         #[test]
         fn get_data_ok_deserializes_to_type() {
-            let _mock = mock("GET", "/cdn/0.0.0/data/en_US/data.json")
+            let (mut server, _url, client) = create_mock_client();
+            let _mock = server
+                .mock("GET", "/cdn/0.0.0/data/en_US/data.json")
                 .with_status(200)
                 .with_header("Content-Type", "application/json")
                 .with_body(r#"["value"]"#)
                 .create();
 
-            let client = Client::default();
             assert_eq!(
                 client.get_data::<Vec<String>>("./data.json").unwrap(),
                 vec!["value".to_owned()]

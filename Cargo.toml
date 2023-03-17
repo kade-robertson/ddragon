@@ -11,8 +11,8 @@ keywords = ["ddragon", "league-of-legends", "lol", "teamfight-tactics", "tft"]
 categories = ["api-bindings"]
 
 [dependencies]
-cacache-sync = { version = "11.0", optional = true }
-http-cache-reqwest = { version = "0.5", optional = true }
+cacache = { version = "11.4", optional = true }
+http-cache-reqwest = { version = "0.8", optional = true }
 image = { version = "0.24", default-features = false, features = ["png"], optional = true }
 reqwest = { version = "0.11", features = ["json"], optional = true }
 reqwest-middleware = { version = "0.2", optional = true }
@@ -22,12 +22,13 @@ ureq = { version = "2.6", features = ["json"], optional = true }
 url = { version = "2.3", optional = true }
 
 [dev-dependencies]
-mockito = "0.31.1"
-tokio-test = "0.4.2"
+mockito = "1"
+tokio = "1"
+tokio-test = "0.4"
 
 [features]
 default = ["sync"]
-sync = ["dep:thiserror", "dep:url", "dep:ureq", "dep:cacache-sync"]
+sync = ["dep:thiserror", "dep:url", "dep:ureq", "dep:cacache"]
 async = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
 image = ["dep:image"]
 
