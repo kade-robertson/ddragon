@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/kade-robertson/ddragon/compare/v0.7.0...v0.7.1) (2023-03-17)
+
+
+### Bug Fixes
+
+* **deps:** replace cacache-sync with cacache ([#41](https://github.com/kade-robertson/ddragon/issues/41)) ([3d1a37d](https://github.com/kade-robertson/ddragon/commit/3d1a37d82d9d217da8ff5b2d9325ab3ede88eee6))
+
 ## [0.7.0](https://github.com/kade-robertson/ddragon/compare/v0.6.0...v0.7.0) (2023-02-07)
 
 
