@@ -4,10 +4,10 @@
 /// Contains the structs that can be returned by the client API.
 pub mod models;
 
-#[cfg(any(feature = "sync", feature = "async"))]
+#[cfg(any(feature = "sync", feature = "async-base"))]
 mod error;
 
-#[cfg(any(feature = "sync", feature = "async"))]
+#[cfg(any(feature = "sync", feature = "async-base"))]
 pub use error::ClientError;
 
 #[cfg(feature = "sync")]
@@ -24,12 +24,12 @@ pub use client::Client;
 #[cfg(feature = "sync")]
 pub use client::ClientBuilder;
 
-#[cfg(feature = "async")]
+#[cfg(any(feature = "async", feature = "async-rustls"))]
 /// Contains the async version of the client API.
 pub mod async_client;
 
-#[cfg(feature = "async")]
+#[cfg(any(feature = "async", feature = "async-rustls"))]
 pub use async_client::AsyncClient;
 
-#[cfg(feature = "async")]
+#[cfg(any(feature = "async", feature = "async-rustls"))]
 pub use async_client::AsyncClientBuilder;

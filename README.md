@@ -49,6 +49,7 @@ The following crate features are available:
   - Provides the `ddragon::async_client` module.
   - Provides the re-exported `ddragon::AsyncClient` and `ddragon::AsyncClientBuilder` impls.
   - Adds `reqwest` with the `json` feature, `reqwest-middleware` and `http-cache-reqwest` as dependencies.
+  - If you would like the client to use `rustls`, use the `async-rustls` feature instead.
 - `image` enables image fetching and caching.
   - Both clients will receive `image_of` and `sprite_of` for any model which implements `HasImage`.
   - Adds the `image` dependency.

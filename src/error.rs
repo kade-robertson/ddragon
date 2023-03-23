@@ -14,12 +14,12 @@ pub enum ClientError {
     /// Indicates a request failed, for the same reasons any `ureq` request may
     /// fail.
     Request(#[from] Box<ureq::Error>),
-    #[cfg(feature = "async")]
+    #[cfg(feature = "async-base")]
     #[error("Could not complete request.")]
     /// Indicates a request failed, for the same reasons any `reqwest` request
     /// may fail.
     AsyncRequest(#[from] reqwest::Error),
-    #[cfg(feature = "async")]
+    #[cfg(feature = "async-base")]
     #[error("Could not complete request.")]
     /// Indicates a request failed, for the same reasons any `reqwest-middlware`
     /// request may fail.
