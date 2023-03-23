@@ -14,7 +14,7 @@ categories = ["api-bindings"]
 cacache = { version = "11.4", optional = true }
 http-cache-reqwest = { version = "0.8", optional = true }
 image = { version = "0.24", default-features = false, features = ["png"], optional = true }
-reqwest = { version = "0.11", features = ["json"], optional = true }
+reqwest = { version = "0.11", default-features = false, features = ["json"], optional = true }
 reqwest-middleware = { version = "0.2", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = { version = "1.0", optional = true }
@@ -29,8 +29,13 @@ tokio-test = "0.4"
 [features]
 default = ["sync"]
 sync = ["dep:thiserror", "dep:url", "dep:ureq", "dep:cacache"]
-async = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
+async-base = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
+async = ["async-base", "reqwest?/native-tls"]
+async-rustls = ["async-base", "reqwest?/rustls"]
 image = ["dep:image"]
+
+[patch.crates-io]
+reflink = { git = "https://github.com/nicokoch/reflink", rev = "e8d93b46" }
 
 [package.metadata.docs.rs]
 all-features = true

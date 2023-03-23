@@ -1,4 +1,4 @@
-#![cfg_attr(docsrs, doc(cfg(feature = "async")))]
+#![cfg_attr(docsrs, doc(cfg(any(feature = "async", feature = "async-rustls"))))]
 #![warn(missing_docs)]
 
 #[cfg(feature = "image")]
