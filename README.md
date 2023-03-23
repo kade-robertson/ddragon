@@ -51,31 +51,41 @@ The following crate features are available:
   - Adds `reqwest` with the `json` feature, `reqwest-middleware` and `http-cache-reqwest` as dependencies.
   - If you would like the client to use `rustls`, use the `async-rustls` feature instead.
 - `image` enables image fetching and caching.
+
   - Both clients will receive `image_of` and `sprite_of` for any model which implements `HasImage`.
   - Adds the `image` dependency.
 
-To use the library with just the synchronous version, it should be as simple as adding any other dependency:
+- To use the library with just the synchronous version, it should be as simple as adding any other dependency:
 
 ```toml
 [dependencies]
 ddragon = "<version>"
 ```
 
-If you would also like to have the image fetching support, use:
+- If you would also like to have the image fetching support, use:
 
 ```toml
 [dependencies]
 ddragon = { version = "<version>", features = ["image"] }
 ```
 
-If you want the asynchronous client only, you probably don't want to pull in the dependencies related to the synchronous code, so you can do this:
+- If you want the asynchronous client only, you probably don't want to pull in the dependencies related to the synchronous code, so you can do this:
 
 ```toml
 [dependencies]
 ddragon = { version = "<version>", default-features = false, features = ["async"] }
 ```
 
-If you only want the DDragon models (none of the client code), you can use
+- If you want the async client and you want to use `rustls` (and you want `ddragon` to generate the client), you can use:
+
+```toml
+[dependencies]
+ddragon = { version = "<version>", default-features = false, features = ["async-rustls"] }
+```
+
+Note that if you are providing your own client (via `AsyncClientBuilder::new().agent()`) you can use either `async` feature set.
+
+- If you only want the DDragon models (none of the client code), you can use
 
 ```toml
 [dependencies]
