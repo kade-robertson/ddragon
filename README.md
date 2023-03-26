@@ -91,3 +91,13 @@ Note that if you are providing your own client (via `AsyncClientBuilder::new().a
 [dependencies]
 ddragon = { version = "<version>", default-features = false }
 ```
+
+### Note: `musl` builds for `async` users
+
+A dependency of this crate is `reflink`, which does not have a version published to `crates.io` compatible with musl.
+If you want to build with one of the `async` features, you will need the following patch in your `Cargo.toml`:
+
+```toml
+[patch.crates-io]
+reflink = { git = "https://github.com/nicokoch/reflink", rev = "e8d93b46" }
+```
