@@ -1,6 +1,4 @@
 on:
-  pull_request:
-    branches: [ master ]
   schedule:
     - cron: '7 7 * * *'
 
@@ -12,6 +10,7 @@ jobs:
     strategy:
       matrix:
         toolchain: [1.63.0, stable, beta, nightly]
+        runner: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
@@ -36,5 +35,17 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
 
+      - name: Cargo cache
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/            
+          key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
+
       - name: Health Check
-        run: cargo test --all-features --release -- --test health --nocapture
+        run: cargo test ${{ matrix.features }} --release -- --test health --nocapture

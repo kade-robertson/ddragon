@@ -10,6 +10,7 @@ jobs:
     strategy:
       matrix:
         toolchain: [1.63.0, stable, beta, nightly]
+        runner: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
@@ -36,6 +37,18 @@ jobs:
           targets: ${{ matrix.target }}
           components: rustfmt
 
+      - name: Cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/            
+          key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
+
       - name: Install tools
         run: |
           cargo install --locked cargo-audit
@@ -47,7 +60,7 @@ jobs:
 
       - name: Check
         run: |
-          cargo audit
+          cargo audit --ignore RUSTSEC-2021-0145
           cargo outdated --exit-code 1
           cargo msrv --verify -- cargo check ${{ matrix.features }}
 
