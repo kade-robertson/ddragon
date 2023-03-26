@@ -92,6 +92,10 @@ Note that if you are providing your own client (via `AsyncClientBuilder::new().a
 ddragon = { version = "<version>", default-features = false }
 ```
 
+### MSRV
+
+Currently, this crate support Rust >= 1.65.0.
+
 ### Note: `musl` builds for `async` users
 
 A dependency of this crate is `reflink`, which does not have a version published to `crates.io` compatible with musl.
