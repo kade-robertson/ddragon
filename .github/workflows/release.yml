@@ -16,19 +16,6 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Cargo cache
-        uses: actions/cache@v3
-        continue-on-error: false
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/            
-          key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
-
       - name: Publish
         uses: katyo/publish-crates@v1
         with:

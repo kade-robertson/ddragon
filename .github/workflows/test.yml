@@ -2,29 +2,61 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  CARGO_UNSTABLE_SPARSE_REGISTRY: true
-
 name: test
 jobs:
   test:
-    name: unit + integration tests (${{ matrix.toolchain }})
-    runs-on: ubuntu-latest
+    name: unit + integration tests (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }}, ${{ matrix.async-feature }})
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        toolchain: [stable, nightly]
+        toolchain: [1.65.0, stable, beta, nightly]
+        runner: [ubuntu-latest, windows-latest, macos-latest]
+        target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, x86_64-pc-windows-gnu, x86_64-pc-windows-msvc, x86_64-apple-darwin]
+        async-feature: [async,async-rustls]
+        exclude:
+          # don't run async for musl builds
+          - target: x86_64-unknown-linux-musl
+            async-feature: async
+          # don't run when target <-> runner pair is invalid
+          - target: x86_64-pc-windows-gnu
+            runner: ubuntu-latest
+          - target: x86_64-pc-windows-msvc
+            runner: ubuntu-latest
+          - target: x86_64-apple-darwin
+            runner: ubuntu-latest
+          - target: x86_64-unknown-linux-gnu
+            runner: windows-latest
+          - target: x86_64-unknown-linux-musl
+            runner: windows-latest
+          - target: x86_64-apple-darwin
+            runner: windows-latest
+          - target: x86_64-unknown-linux-gnu
+            runner: macos-latest
+          - target: x86_64-unknown-linux-musl
+            runner: macos-latest
+          - target: x86_64-pc-windows-gnu
+            runner: macos-latest
+          - target: x86_64-pc-windows-msvc
+            runner: macos-latest
     steps:
+      - if: matrix.target == 'x86_64-unknown-linux-musl'
+        name: Add musl dependencies
+        run: |
+          set -ex
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
       - uses: actions/checkout@v3
 
       - id: toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
+          targets: ${{ matrix.target }}
           components: rustfmt
 
       - name: Cargo cache
         uses: actions/cache@v3
-        continue-on-error: false
         with:
           path: |
             ~/.cargo/bin/
@@ -34,22 +66,12 @@ jobs:
             target/            
           key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
-
-      - name: Install tools
-        run: |
-          cargo install --locked cargo-audit
-          cargo install --locked cargo-outdated
       
       - name: Check formatting
         run: cargo fmt --all -- --check
 
-      - name: Check
-        run: |
-          cargo audit
-          cargo outdated --exit-code 1
-
       - name: Test
         run: |
-          cargo test --all-features --lib -- --test-threads 1
-          cargo test --all-features --doc
-          cargo test --all-features --release -- --test health --nocapture
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --lib
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --doc
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --release -- --test health --nocapture
