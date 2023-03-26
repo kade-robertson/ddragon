@@ -16,11 +16,11 @@ jobs:
         exclude:
           # targets that don't make sense for runner
           - target: x86_64-pc-windows-gnu
-            runner: windows-latest
+            runner: ubuntu-latest
           - target: x86_64-pc-windows-msvc
-            runner: windows-latest
+            runner: ubuntu-latest
           - target: x86_64-apple-darwin
-            runner: windows-latest
+            runner: ubuntu-latest
           - target: x86_64-unknown-linux-gnu
             runner: windows-latest
           - target: x86_64-unknown-linux-musl
