@@ -7,8 +7,8 @@ on:
 name: health
 jobs:
   test:
-    name: health check (${{ runner.os }}, ${{ matrix.toolchain }}, ${{ matrix.target }})
-    runs-on: ubuntu-latest
+    name: health check (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         toolchain: [1.63.0, stable, beta, nightly]
