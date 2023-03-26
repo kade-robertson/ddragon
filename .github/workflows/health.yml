@@ -55,4 +55,4 @@ jobs:
           restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
 
       - name: Health Check
-        run: cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --release -- --test health --nocapture
+        run: cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --release -- --test health --nocapture

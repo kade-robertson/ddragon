@@ -5,7 +5,7 @@ on:
 name: test
 jobs:
   test:
-    name: unit + integration tests (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }})
+    name: unit + integration tests (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }}, ${{ matriox.async-feature }})
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
@@ -14,6 +14,7 @@ jobs:
         target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, x86_64-pc-windows-gnu, x86_64-pc-windows-msvc, x86_64-apple-darwin]
         async-feature: [async,async-rustls]
         exclude:
+          # targets that don't make sense for runner
           - target: x86_64-pc-windows-gnu
             runner: windows-latest
           - target: x86_64-pc-windows-msvc
@@ -61,6 +62,6 @@ jobs:
 
       - name: Test
         run: |
-          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.toolchain }} --lib -- --test-threads 1
-          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.toolchain }} --doc
-          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.toolchain }} --release -- --test health --nocapture
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --lib -- --test-threads 1
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --doc
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --release -- --test health --nocapture
