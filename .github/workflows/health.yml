@@ -11,22 +11,29 @@ jobs:
       matrix:
         toolchain: [1.63.0, stable, beta, nightly]
         runner: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - target: x86_64-unknown-linux-gnu
-            runner: ubuntu-latest
-            features: --features sync,async,image
-          - target: x86_64-unknown-linux-musl
-            runner: ubuntu-latest
-            features: --features sync,async-rustls,image
+        target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, x86_64-pc-windows-gnu, x86_64-pc-windows-msvc, x86_64-apple-darwin]
+        async-feature: [async,async-rustls]
+        exclude:
           - target: x86_64-pc-windows-gnu
             runner: windows-latest
-            features: --features sync,async,image
           - target: x86_64-pc-windows-msvc
             runner: windows-latest
-            features: --features sync,async,image
           - target: x86_64-apple-darwin
+            runner: windows-latest
+          - target: x86_64-unknown-linux-gnu
+            runner: windows-latest
+          - target: x86_64-unknown-linux-musl
+            runner: windows-latest
+          - target: x86_64-apple-darwin
+            runner: windows-latest
+          - target: x86_64-unknown-linux-gnu
             runner: macos-latest
-            features: --features sync,async,image
+          - target: x86_64-unknown-linux-musl
+            runner: macos-latest
+          - target: x86_64-pc-windows-gnu
+            runner: macos-latest
+          - target: x86_64-pc-windows-msvc
+            runner: macos-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -48,4 +55,4 @@ jobs:
           restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
 
       - name: Health Check
-        run: cargo test ${{ matrix.features }} --release -- --test health --nocapture
+        run: cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --release -- --test health --nocapture

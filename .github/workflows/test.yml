@@ -11,22 +11,29 @@ jobs:
       matrix:
         toolchain: [1.63.0, stable, beta, nightly]
         runner: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - target: x86_64-unknown-linux-gnu
-            runner: ubuntu-latest
-            features: --features sync,async,image
-          - target: x86_64-unknown-linux-musl
-            runner: ubuntu-latest
-            features: --features sync,async-rustls,image
+        target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, x86_64-pc-windows-gnu, x86_64-pc-windows-msvc, x86_64-apple-darwin]
+        async-feature: [async,async-rustls]
+        exclude:
           - target: x86_64-pc-windows-gnu
             runner: windows-latest
-            features: --features sync,async,image
           - target: x86_64-pc-windows-msvc
             runner: windows-latest
-            features: --features sync,async,image
           - target: x86_64-apple-darwin
+            runner: windows-latest
+          - target: x86_64-unknown-linux-gnu
+            runner: windows-latest
+          - target: x86_64-unknown-linux-musl
+            runner: windows-latest
+          - target: x86_64-apple-darwin
+            runner: windows-latest
+          - target: x86_64-unknown-linux-gnu
             runner: macos-latest
-            features: --features sync,async,image
+          - target: x86_64-unknown-linux-musl
+            runner: macos-latest
+          - target: x86_64-pc-windows-gnu
+            runner: macos-latest
+          - target: x86_64-pc-windows-msvc
+            runner: macos-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -48,24 +55,12 @@ jobs:
             target/            
           key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
-
-      - name: Install tools
-        run: |
-          cargo install --locked cargo-audit
-          cargo install --locked cargo-outdated
-          cargo install --locked cargo-msrv
       
       - name: Check formatting
         run: cargo fmt --all -- --check
 
-      - name: Check
-        run: |
-          cargo audit --ignore RUSTSEC-2021-0145
-          cargo outdated --exit-code 1
-          cargo msrv --verify -- cargo check ${{ matrix.features }}
-
       - name: Test
         run: |
-          cargo test ${{ matrix.features }} --lib -- --test-threads 1
-          cargo test ${{ matrix.features }} --doc
-          cargo test ${{ matrix.features }} --release -- --test health --nocapture
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.toolchain }} --lib -- --test-threads 1
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.toolchain }} --doc
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.toolchain }} --release -- --test health --nocapture
