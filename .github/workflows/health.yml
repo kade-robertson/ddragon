@@ -5,7 +5,7 @@ on:
 name: health
 jobs:
   test:
-    name: health check (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }})
+    name: health check (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }}, ${{ matrix.async-feature }})
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:

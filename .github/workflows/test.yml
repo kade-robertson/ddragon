@@ -5,7 +5,7 @@ on:
 name: test
 jobs:
   test:
-    name: unit + integration tests (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }}, ${{ matriox.async-feature }})
+    name: unit + integration tests (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }}, ${{ matrix.async-feature }})
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
