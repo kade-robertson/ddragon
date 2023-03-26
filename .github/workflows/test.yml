@@ -39,6 +39,13 @@ jobs:
           - target: x86_64-pc-windows-msvc
             runner: macos-latest
     steps:
+      - if: ${{ matrix.target == "x86_64-unknown-linux-musl" }}
+        name: Add musl dependencies
+        run: |
+          set -ex
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
       - uses: actions/checkout@v3
 
       - id: toolchain
@@ -65,6 +72,6 @@ jobs:
 
       - name: Test
         run: |
-          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --lib -- --test-threads 1
+          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --lib
           cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --doc
           cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --release -- --test health --nocapture
