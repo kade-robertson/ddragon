@@ -11,7 +11,7 @@ name: build-caches
 jobs:
   build-cache:
     name: build rust cache (${{ matrix.runner }}, ${{ matrix.toolchain }}, ${{ matrix.target }}, ${{ matrix.async-feature }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         toolchain: [1.65.0, stable, beta, nightly]
