@@ -2,6 +2,9 @@ on:
   schedule:
     - cron: '7 7 * * *'
 
+env:
+  CARGO_INCREMENTAL: 0
+
 name: health
 jobs:
   test:
@@ -54,17 +57,8 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           targets: ${{ matrix.target }}
 
-      - name: Cargo cache
-        uses: actions/cache/restore@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/            
-          key: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-rust-${{ steps.toolchain.outputs.cachekey }}-
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
 
       - name: Health Check
         run: cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --release -- --test health --nocapture

@@ -35,6 +35,9 @@ async = ["async-base", "reqwest?/native-tls"]
 async-rustls = ["async-base", "reqwest?/rustls"]
 image = ["dep:image"]
 
+[profile.dev]
+debug = 0
+
 [patch.crates-io]
 reflink = { git = "https://github.com/nicokoch/reflink", rev = "e8d93b46" }
 
