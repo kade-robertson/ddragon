@@ -53,6 +53,4 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build cache
-        run: |
-          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --no-run
-          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --no-run --release
+        run: cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --no-run
