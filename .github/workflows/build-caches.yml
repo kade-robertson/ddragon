@@ -23,6 +23,9 @@ jobs:
           # don't run async for musl builds
           - target: x86_64-unknown-linux-musl
             async-feature: async
+          # don't run async-rustls on macOS to limit parallel macOS jobs
+          - runner: macos-latest
+            async-feature: async-rustls
           # don't run when target <-> runner pair is invalid
           - target: x86_64-apple-darwin
             runner: ubuntu-latest

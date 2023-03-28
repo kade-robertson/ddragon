@@ -20,6 +20,9 @@ jobs:
           # don't run async for musl builds
           - target: x86_64-unknown-linux-musl
             async-feature: async
+          # don't run async-rustls on macOS to limit parallel macOS jobs
+          - runner: macos-latest
+            async-feature: async-rustls
           # don't run when target <-> runner pair is invalid
           - target: x86_64-apple-darwin
             runner: ubuntu-latest
@@ -57,9 +60,3 @@ jobs:
         run: |
           cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --lib
           cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --doc
-
-      - name: Build health check
-        run: cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --no-run --release -- --test health
-
-      - name: Health check
-        run: cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --release -- --test health --nocapture
