@@ -8,15 +8,27 @@ jobs:
   release-please:
     name: release-please
     runs-on: ubuntu-latest
-    outputs:
-        released: ${{ steps.release.outputs.releases_created }}
     steps:
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
-          token: ${{ secrets.RELEASE_PLEASE_GITHUB_TOKEN }}
           release-type: rust
           package-name: ddragon
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
           changelog-types: '[{ "type": "feat", "section": "Features", "hidden": false },{ "type": "fix", "section": "Bug Fixes", "hidden": false },{ "type": "refactor", "section": "Code Refactoring", "hidden": false }]'
+      
+      - if: ${{ steps.release.outputs.releases_created }}
+        uses: actions/checkout@v3
+
+      - if: ${{ steps.release.outputs.releases_created }}
+        id: toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - if: ${{ steps.release.outputs.releases_created }}
+        name: Publish
+        uses: katyo/publish-crates@v1
+        with:
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
