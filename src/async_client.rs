@@ -37,6 +37,7 @@ pub struct AsyncClientBuilder {
     server: String,
     agent: Option<ClientAgent>,
     cache: Option<String>,
+    version: Option<String>,
 }
 
 ///
@@ -94,7 +95,12 @@ pub struct AsyncClientBuilder {
 impl AsyncClientBuilder {
     /// Creates an [AsyncClientBuilder] with no default options set.
     pub fn new() -> Self {
-        Self { server: "https://ddragon.leagueoflegends.com".to_owned(), agent: None, cache: None }
+        Self {
+            server: "https://ddragon.leagueoflegends.com".to_owned(),
+            agent: None,
+            cache: None,
+            version: None,
+        }
     }
 
     /// Configures a custom [ClientWithMiddleware] for making network requests.
@@ -114,6 +120,13 @@ impl AsyncClientBuilder {
     /// Configures the cache directory to use for anything that gets downlaoded.
     pub fn cache(mut self, cache_dir: &str) -> Self {
         self.cache = Some(cache_dir.to_owned());
+        self
+    }
+
+    /// Configure the ddragon version for making requests. Normally this should
+    /// not be needed, as the latest version is always used.
+    pub fn version(mut self, version: &str) -> Self {
+        self.version = Some(version.to_owned());
         self
     }
 
@@ -137,24 +150,28 @@ impl AsyncClientBuilder {
 
         let base_url = Url::parse(&self.server)?;
 
-        let version_list = match agent.clone() {
-            ClientAgent::Plain(a) => {
-                a.get(base_url.join("/api/versions.json")?.as_str())
-                    .send()
-                    .await?
-                    .json::<Vec<String>>()
-                    .await?
-            }
-            ClientAgent::Middleware(a) => {
-                a.get(base_url.join("/api/versions.json")?.as_str())
-                    .send()
-                    .await?
-                    .json::<Vec<String>>()
-                    .await?
-            }
-        };
+        let latest_version = if let Some(version) = self.version {
+            version
+        } else {
+            let version_list = match agent.clone() {
+                ClientAgent::Plain(a) => {
+                    a.get(base_url.join("/api/versions.json")?.as_str())
+                        .send()
+                        .await?
+                        .json::<Vec<String>>()
+                        .await?
+                }
+                ClientAgent::Middleware(a) => {
+                    a.get(base_url.join("/api/versions.json")?.as_str())
+                        .send()
+                        .await?
+                        .json::<Vec<String>>()
+                        .await?
+                }
+            };
 
-        let latest_version = version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned();
+            version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned()
+        };
 
         let middleware_agent = match agent {
             ClientAgent::Plain(plain_agent) => match self.cache {
@@ -462,6 +479,24 @@ mod test {
                 .await;
 
             assert!(AsyncClientBuilder::new().server(&server.url()).build().await.is_err());
+        }
+
+        #[tokio::test]
+        async fn result_ok_manual_version() {
+            let mut server = Server::new_async().await;
+            let _mock = server
+                .mock("GET", "/api/versions.json")
+                .with_status(200)
+                .with_header("Content-Type", "application/json")
+                .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
+                .create_async()
+                .await;
+
+            let maybe_client =
+                AsyncClientBuilder::new().server(&server.url()).version("3.3.3").build().await;
+
+            assert!(maybe_client.is_ok());
+            assert_eq!(maybe_client.unwrap().version, "3.3.3");
         }
     }
 

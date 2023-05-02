@@ -36,6 +36,7 @@ pub struct ClientBuilder {
     server: String,
     agent: Option<Agent>,
     cache: Option<String>,
+    version: Option<String>,
 }
 
 ///
@@ -73,7 +74,12 @@ pub struct ClientBuilder {
 impl ClientBuilder {
     /// Creates a [ClientBuilder] with no default options set.
     pub fn new() -> Self {
-        Self { server: "https://ddragon.leagueoflegends.com".to_owned(), agent: None, cache: None }
+        Self {
+            server: "https://ddragon.leagueoflegends.com".to_owned(),
+            agent: None,
+            cache: None,
+            version: None,
+        }
     }
 
     /// Configures a custom [Agent] for making network requests.
@@ -85,6 +91,13 @@ impl ClientBuilder {
     /// Configures the cache directory to use for anything that gets downlaoded.
     pub fn cache(mut self, cache_dir: &str) -> Self {
         self.cache = Some(cache_dir.to_owned());
+        self
+    }
+
+    /// Configure the ddragon version for making requests. Normally this should
+    /// not be needed, as the latest version is always used.
+    pub fn version(mut self, version: &str) -> Self {
+        self.version = Some(version.to_owned());
         self
     }
 
@@ -113,13 +126,17 @@ impl ClientBuilder {
         };
 
         let base_url = Url::parse(&self.server)?;
-        let version_list = agent
-            .get(base_url.join("/api/versions.json")?.as_str())
-            .call()
-            .map_err(Box::new)?
-            .into_json::<Vec<String>>()?;
+        let latest_version = if let Some(version) = self.version {
+            version
+        } else {
+            let version_list = agent
+                .get(base_url.join("/api/versions.json")?.as_str())
+                .call()
+                .map_err(Box::new)?
+                .into_json::<Vec<String>>()?;
 
-        let latest_version = version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned();
+            version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned()
+        };
 
         Ok(Client { agent, version: latest_version, base_url, cache_directory: self.cache })
     }
@@ -420,6 +437,22 @@ mod test {
                 .create();
 
             assert!(ClientBuilder::new().server(&server.url()).build().is_err());
+        }
+
+        #[test]
+        fn result_ok_manual_version() {
+            let mut server = Server::new();
+            let _mock = server
+                .mock("GET", "/api/versions.json")
+                .with_status(200)
+                .with_header("Content-Type", "application/json")
+                .with_body(r#"["0.0.0", "1.1.1", "2.2.2"]"#)
+                .create();
+
+            let maybe_client = ClientBuilder::new().server(&server.url()).version("3.3.3").build();
+
+            assert!(maybe_client.is_ok());
+            assert_eq!(maybe_client.unwrap().version, "3.3.3");
         }
     }
 
