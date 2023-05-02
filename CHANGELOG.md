@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.2](https://github.com/kade-robertson/ddragon/compare/v0.7.1...v0.7.2) (2023-05-02)
+
+
+### Features
+
+* support specifying specific API version ([#49](https://github.com/kade-robertson/ddragon/issues/49)) ([059bd9c](https://github.com/kade-robertson/ddragon/commit/059bd9c3da5fcd0c52bae0419d6301a2aa295bcc))
+* support using rustls and targeting musl ([#43](https://github.com/kade-robertson/ddragon/issues/43)) ([61aa88b](https://github.com/kade-robertson/ddragon/commit/61aa88b2abb23979f37446e88459b896523d35f1))
+
 ## [0.7.1](https://github.com/kade-robertson/ddragon/compare/v0.7.0...v0.7.1) (2023-03-17)
 
 
