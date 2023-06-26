@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.3](https://github.com/kade-robertson/ddragon/compare/v0.7.2...v0.7.3) (2023-06-26)
+
+
+### Bug Fixes
+
+* **deps:** specify range on cacache dependency ([#51](https://github.com/kade-robertson/ddragon/issues/51)) ([bd8ee86](https://github.com/kade-robertson/ddragon/commit/bd8ee866d8ba805f1d45fd36f93f48a0cd6f490c))
+
 ## [0.7.2](https://github.com/kade-robertson/ddragon/compare/v0.7.1...v0.7.2) (2023-05-02)
 
 
