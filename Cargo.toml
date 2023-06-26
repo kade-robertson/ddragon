@@ -12,7 +12,7 @@ keywords = ["ddragon", "league-of-legends", "lol", "teamfight-tactics", "tft"]
 categories = ["api-bindings"]
 
 [dependencies]
-cacache = { version = "11.4", optional = true }
+cacache = { version = ">= 11.4.0, <= 11.5.2", optional = true }
 http-cache-reqwest = { version = "0.8", optional = true }
 image = { version = "0.24", default-features = false, features = ["png"], optional = true }
 reqwest = { version = "0.11", default-features = false, features = ["json"], optional = true }
