@@ -4,7 +4,7 @@
 #[cfg(feature = "image")]
 use image::{load_from_memory, DynamicImage};
 
-use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
+use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache, HttpCacheOptions};
 use reqwest::Client;
 use reqwest_middleware::{ClientBuilder as MiddlewareClientBuilder, ClientWithMiddleware};
 use serde::de::DeserializeOwned;
@@ -178,8 +178,8 @@ impl AsyncClientBuilder {
                 Some(cache_dir) => MiddlewareClientBuilder::new(plain_agent)
                     .with(Cache(HttpCache {
                         mode: CacheMode::ForceCache,
-                        manager: CACacheManager { path: cache_dir },
-                        options: None,
+                        manager: CACacheManager { path: cache_dir.into() },
+                        options: HttpCacheOptions::default(),
                     }))
                     .build(),
                 None => MiddlewareClientBuilder::new(plain_agent).build(),
