@@ -16,7 +16,7 @@ pub struct SummonerSpell {
     pub description: String,
     pub tooltip: String,
     pub maxrank: i64,
-    pub cooldown: Vec<i64>,
+    pub cooldown: Vec<f64>,
     #[serde(rename = "cooldownBurn")]
     pub cooldown_burn: String,
     pub cost: Vec<i64>,
