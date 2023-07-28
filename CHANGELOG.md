@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.4](https://github.com/kade-robertson/ddragon/compare/v0.7.3...v0.7.4) (2023-07-28)
+
+
+### Bug Fixes
+
+* summoner spell cooldown should be f64 ([#53](https://github.com/kade-robertson/ddragon/issues/53)) ([7682032](https://github.com/kade-robertson/ddragon/commit/768203210f8ea90882ae58aa9cbf206493de150d))
+
 ## [0.7.3](https://github.com/kade-robertson/ddragon/compare/v0.7.2...v0.7.3) (2023-06-26)
 
 
