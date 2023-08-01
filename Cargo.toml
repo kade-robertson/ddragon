@@ -21,6 +21,7 @@ serde = { version = "1.0", features = ["derive"] }
 thiserror = { version = "1.0", optional = true }
 ureq = { version = "2.7", features = ["json"], optional = true }
 url = { version = "2.3", optional = true }
+time = { version = "<=0.3.23", optional = true } 
 
 [dev-dependencies]
 mockito = "1"
@@ -30,7 +31,7 @@ tokio-test = "0.4"
 [features]
 default = ["sync"]
 sync = ["dep:thiserror", "dep:url", "dep:ureq", "dep:cacache"]
-async-base = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
+async-base = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest", "dep:time"]
 async = ["async-base", "reqwest?/native-tls"]
 async-rustls = ["async-base", "reqwest?/rustls"]
 image = ["dep:image"]
