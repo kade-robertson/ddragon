@@ -4,19 +4,19 @@
 # documentation.
 # rust-clippy is a tool that runs a bunch of lints to catch common
 # mistakes in your Rust code and help improve your Rust code.
-# More details at https://github.com/rust-lang/rust-clippy 
+# More details at https://github.com/rust-lang/rust-clippy
 # and https://rust-lang.github.io/rust-clippy/
 
 name: rust-clippy analyze
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ master ]
+    branches: [master]
   schedule:
-    - cron: '32 0 * * 2'
+    - cron: "32 0 * * 2"
 
 jobs:
   rust-clippy-analyze:
@@ -30,10 +30,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@1.66.1
+        uses: dtolnay/rust-toolchain@1.67.1
         with:
           components: clippy
-      
+
       - name: Setup cargo-binstall
         run: |
           wget -q -O binstall.tgz https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz
@@ -45,8 +45,7 @@ jobs:
         run: cargo binstall --no-confirm clippy-sarif sarif-fmt
 
       - name: Run rust-clippy
-        run:
-          cargo clippy
+        run: cargo clippy
           --all-features
           --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
         continue-on-error: true
