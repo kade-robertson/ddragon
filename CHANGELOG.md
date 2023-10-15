@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0](https://github.com/kade-robertson/ddragon/compare/v0.7.4...v0.8.0) (2023-10-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** bump msrv to 1.67.1 for time dependency ([#57](https://github.com/kade-robertson/ddragon/issues/57))
+* **deps:** upgrade deps, bump msrv to 1.66.1 ([#55](https://github.com/kade-robertson/ddragon/issues/55))
+
+### Bug Fixes
+
+* **deps:** bump msrv to 1.67.1 for time dependency ([#57](https://github.com/kade-robertson/ddragon/issues/57)) ([6623173](https://github.com/kade-robertson/ddragon/commit/6623173d36e228367c623fd077c6063c47f7bf0c))
+* **deps:** upgrade deps, bump msrv to 1.66.1 ([#55](https://github.com/kade-robertson/ddragon/issues/55)) ([b00b2ea](https://github.com/kade-robertson/ddragon/commit/b00b2ead06538f0d0225b96e8a41956e8267fe16))
+
 ## [0.7.4](https://github.com/kade-robertson/ddragon/compare/v0.7.3...v0.7.4) (2023-07-28)
 
 
