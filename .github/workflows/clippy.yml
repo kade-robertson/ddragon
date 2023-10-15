@@ -18,6 +18,10 @@ on:
   schedule:
     - cron: "32 0 * * 2"
 
+env:
+  SCCACHE_GHA_ENABLED: true
+  RUSTC_WRAPPER: sccache
+
 jobs:
   rust-clippy-analyze:
     name: Run rust-clippy analyzing
@@ -33,6 +37,9 @@ jobs:
         uses: dtolnay/rust-toolchain@1.67.1
         with:
           components: clippy
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
 
       - name: Setup cargo-binstall
         run: |
