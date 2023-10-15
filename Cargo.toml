@@ -23,9 +23,9 @@ ureq = { version = "2.7", features = ["json"], optional = true }
 url = { version = "2.3", optional = true }
 
 [dev-dependencies]
-mockito = "1"
-tokio = "1"
-tokio-test = "0.4"
+mockito = "=1.1.1"
+tokio = "=1.32.0"
+tokio-test = "=0.4.3"
 
 [features]
 default = ["sync"]
