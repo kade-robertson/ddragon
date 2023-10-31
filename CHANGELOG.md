@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/kade-robertson/ddragon/compare/v0.8.0...v0.8.1) (2023-10-31)
+
+
+### Bug Fixes
+
+* **deps:** bump cacache to resolve reflink ([#60](https://github.com/kade-robertson/ddragon/issues/60)) ([edd0f10](https://github.com/kade-robertson/ddragon/commit/edd0f107f2d1c0ee79de88a0b322e24d996d30e2))
+
 ## [0.8.0](https://github.com/kade-robertson/ddragon/compare/v0.7.4...v0.8.0) (2023-10-15)
 
 
