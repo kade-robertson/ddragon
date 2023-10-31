@@ -12,7 +12,7 @@ keywords = ["ddragon", "league-of-legends", "lol", "teamfight-tactics", "tft"]
 categories = ["api-bindings"]
 
 [dependencies]
-cacache = { version = "11.6", optional = true, default-features = false, features = ["tokio-runtime"] }
+cacache = { version = "11.7.1", optional = true, default-features = false, features = ["tokio-runtime", "mmap"] }
 http-cache-reqwest = { version = "0.11", optional = true }
 image = { version = "0.24", default-features = false, features = ["png"], optional = true }
 reqwest = { version = "0.11", default-features = false, features = ["json"], optional = true }
@@ -40,9 +40,6 @@ debug = 0
 
 [profile.release]
 debug = 0
-
-[patch.crates-io]
-reflink = { git = "https://github.com/nicokoch/reflink", rev = "e8d93b46" }
 
 [package.metadata.docs.rs]
 all-features = true
