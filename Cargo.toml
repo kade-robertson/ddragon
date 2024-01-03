@@ -26,6 +26,7 @@ url = { version = "2.3", optional = true }
 mockito = "=1.1.1"
 tokio = "=1.32.0"
 tokio-test = "=0.4.3"
+colored = "=2.0.4"
 
 [features]
 default = ["sync"]
