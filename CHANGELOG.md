@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/kade-robertson/ddragon/compare/v0.8.1...v0.8.2) (2024-04-05)
+
+
+### Bug Fixes
+
+* handle name in tft augment container ([#63](https://github.com/kade-robertson/ddragon/issues/63)) ([bf46732](https://github.com/kade-robertson/ddragon/commit/bf4673217023f92528313843da90d46d3429c92c))
+
 ## [0.8.1](https://github.com/kade-robertson/ddragon/compare/v0.8.0...v0.8.1) (2023-10-31)
 
 
