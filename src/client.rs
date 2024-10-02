@@ -6,6 +6,7 @@ use mockito;
 
 #[cfg(feature = "image")]
 use image::{load_from_memory, DynamicImage};
+use ureq::middleware::MiddlewareChain;
 
 #[cfg(feature = "image")]
 use std::io::Read;
@@ -13,7 +14,7 @@ use std::io::Read;
 #[cfg(feature = "image")]
 use cacache::{read_sync as cache_read, write_sync as cache_write};
 use serde::de::DeserializeOwned;
-use ureq::{Agent, AgentBuilder};
+use ureq::{Agent, Config};
 use url::Url;
 
 use crate::cache_middleware::CacheMiddleware;
@@ -120,8 +121,12 @@ impl ClientBuilder {
         let agent = match self.agent {
             Some(a) => a,
             None => match self.cache.clone() {
-                Some(dir) => AgentBuilder::new().middleware(CacheMiddleware::new(&dir)).build(),
-                None => Agent::new(),
+                Some(dir) => {
+                    let mut middleware = MiddlewareChain::default();
+                    middleware.add(CacheMiddleware::new(&dir));
+                    Config { middleware, ..Config::default() }.into()
+                }
+                None => Agent::new_with_defaults(),
             },
         };
 
@@ -133,7 +138,9 @@ impl ClientBuilder {
                 .get(base_url.join("/api/versions.json")?.as_str())
                 .call()
                 .map_err(Box::new)?
-                .into_json::<Vec<String>>()?;
+                .into_body()
+                .read_json::<Vec<String>>()
+                .map_err(Box::new)?;
 
             version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned()
         };
@@ -235,7 +242,13 @@ impl Client {
         let joined_url = self.get_data_url()?.join(endpoint)?;
         let request_url = joined_url.as_str();
 
-        self.agent.get(request_url).call().map_err(Box::new)?.into_json::<T>().map_err(|e| e.into())
+        self.agent
+            .get(request_url)
+            .call()
+            .map_err(Box::new)?
+            .into_body()
+            .read_json::<T>()
+            .map_err(|e| Box::new(e).into())
     }
 
     create_endpoint!(challenges, "challenge", "challenges", Challenges);
@@ -298,11 +311,16 @@ impl Client {
         // we get a header telling us how many bytes we can read. If we can't,
         // using 1 as a default means parsing will always fail and produce an
         // error that can be handled elsewhere.
-        let image_size_bytes =
-            response.header("Content-Length").unwrap_or("1").parse::<u64>().unwrap_or(1);
+        let image_size_bytes = response
+            .headers()
+            .get("Content-Length")
+            .map(|s| s.to_str().unwrap_or("1"))
+            .unwrap_or("1")
+            .parse::<u64>()
+            .unwrap_or(1);
 
         let mut image_buffer: Vec<u8> = vec![];
-        response.into_reader().take(image_size_bytes).read_to_end(&mut image_buffer)?;
+        response.into_body().into_reader().take(image_size_bytes).read_to_end(&mut image_buffer)?;
         let image_result = load_from_memory(&image_buffer).map_err(|e| e.into());
 
         if let Some(cache_dir) = &self.cache_directory {
@@ -366,7 +384,7 @@ mod test {
             server,
             url.clone(),
             Client {
-                agent: ureq::Agent::new(),
+                agent: Agent::new_with_defaults(),
                 version: "0.0.0".to_owned(),
                 base_url: Url::parse(&url).unwrap(),
                 cache_directory: None,
