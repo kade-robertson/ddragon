@@ -6,15 +6,12 @@ use mockito;
 
 #[cfg(feature = "image")]
 use image::{load_from_memory, DynamicImage};
-use ureq::middleware::MiddlewareChain;
 
 #[cfg(feature = "image")]
 use std::io::Read;
 
-#[cfg(feature = "image")]
-use cacache::{read_sync as cache_read, write_sync as cache_write};
 use serde::de::DeserializeOwned;
-use ureq::{Agent, Config};
+use ureq::Agent;
 use url::Url;
 
 use crate::cache_middleware::CacheMiddleware;
@@ -113,18 +110,16 @@ impl ClientBuilder {
     /// # Notes
     ///
     /// - If a custom agent is specified, you must configure it with the
-    /// [CacheMiddleware] middleware also provided by this crate, or you will
-    /// not retain any caching behaviour.
+    ///   [CacheMiddleware] middleware also provided by this crate, or you will
+    ///   not retain any caching behaviour.
     /// - If a custom agent is specified, not specifying a cache directory will
-    /// result in images not being cached if you are using the `image` feature.
+    ///   result in images not being cached if you are using the `image` feature.
     pub fn build(self) -> Result<Client, ClientError> {
         let agent = match self.agent {
             Some(a) => a,
             None => match self.cache.clone() {
                 Some(dir) => {
-                    let mut middleware = MiddlewareChain::default();
-                    middleware.add(CacheMiddleware::new(&dir));
-                    Config { middleware, ..Config::default() }.into()
+                    Agent::config_builder().middleware(CacheMiddleware::new(&dir)).build().into()
                 }
                 None => Agent::new_with_defaults(),
             },
@@ -142,10 +137,10 @@ impl ClientBuilder {
                 .read_json::<Vec<String>>()
                 .map_err(Box::new)?;
 
-            version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned()
+            version_list.first().ok_or(ClientError::NoLatestVersion)?.to_owned()
         };
 
-        Ok(Client { agent, version: latest_version, base_url, cache_directory: self.cache })
+        Ok(Client { agent, version: latest_version, base_url })
     }
 }
 
@@ -162,7 +157,6 @@ pub struct Client {
     /// The current version of the API data reported back to us from the API.
     pub version: String,
     base_url: Url,
-    cache_directory: Option<String>,
 }
 
 macro_rules! create_endpoint {
@@ -293,17 +287,9 @@ impl Client {
 
     #[cfg(feature = "image")]
     fn get_image(&self, path: Url) -> Result<DynamicImage, ClientError> {
-        let cache_key = path.as_str();
-
-        if let Some(cache_dir) = &self.cache_directory {
-            if let Ok(image_data) = cache_read(cache_dir, cache_key) {
-                return image::load_from_memory(&image_data).map_err(|e| e.into());
-            }
-        }
-
         let response = self
             .agent
-            .get(cache_key)
+            .get(path.as_str())
             .call()
             .map_err(|e| std::convert::Into::<ClientError>::into(Box::new(e)))?;
 
@@ -321,13 +307,8 @@ impl Client {
 
         let mut image_buffer: Vec<u8> = vec![];
         response.into_body().into_reader().take(image_size_bytes).read_to_end(&mut image_buffer)?;
-        let image_result = load_from_memory(&image_buffer).map_err(|e| e.into());
 
-        if let Some(cache_dir) = &self.cache_directory {
-            let _ = cache_write(cache_dir, cache_key, image_buffer);
-        }
-
-        image_result
+        load_from_memory(&image_buffer).map_err(|e| e.into())
     }
 
     /// Returns an [image::DynamicImage].
@@ -387,7 +368,6 @@ mod test {
                 agent: Agent::new_with_defaults(),
                 version: "0.0.0".to_owned(),
                 base_url: Url::parse(&url).unwrap(),
-                cache_directory: None,
             },
         )
     }

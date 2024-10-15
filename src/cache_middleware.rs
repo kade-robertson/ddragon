@@ -25,32 +25,37 @@ impl Middleware for CacheMiddleware {
         request: Request<SendBody>,
         next: MiddlewareNext,
     ) -> Result<Response<Body>, Error> {
-        // Images have to bypass this middleware entirely because you cannot
-        // properly encode/decode as UTF-8. Caching is handled in the client's
-        // get_image() function instead.
-        //
-        // Also, we don't want to cache the version list.
-        if request.uri().path().ends_with(".png")
-            || request.uri().path().ends_with("/api/versions.json")
-        {
+        // We always want an up-to-date version list.
+        if request.uri().path().ends_with("/api/versions.json") {
             return next.handle(request);
         }
 
+        let is_image = request.uri().path().ends_with(".png");
         let cache_key = request.uri().to_string();
         if let Ok(data) = cacache::read_sync(&self.directory, &cache_key) {
             // error here since I can't convert http::Body to ureq::Body.
-            return Response::builder().status(200).body(data);
+            return Ok(Response::builder().status(200).body(
+                Body::builder()
+                    .mime_type(if is_image { "image/png" } else { "application/json" })
+                    .data(data),
+            )?);
         }
 
-        let response = next.handle(request)?;
+        let mut response = next.handle(request)?;
         if response.status() != 200 {
             return Ok(response);
         }
 
-        // This also fails because I consume the response, so I need to make a new
-        // one.
-        let response_str = response.into_body().read_to_string()?;
-        let _ = cacache::write_sync(&self.directory, &cache_key, response_str.clone());
+        let body_mut = response.body_mut();
+        if let Ok(body) = body_mut.read_to_vec() {
+            let _ = cacache::write_sync(&self.directory, cache_key, body.clone());
+            let mut body_builder = Body::builder();
+            if let Some(mime_type) = body_mut.mime_type() {
+                body_builder = body_builder.mime_type(mime_type);
+            }
+            return Ok(Response::builder().status(200).body(body_builder.data(body))?);
+        }
+
         Ok(response)
     }
 }
@@ -59,14 +64,14 @@ impl Middleware for CacheMiddleware {
 mod tests {
     use super::*;
     use mockito::Server;
-    use std::{env::temp_dir, fs::remove_dir_all, path::PathBuf};
-    use ureq::{middleware::MiddlewareChain, Agent, Config};
+    use std::{env::temp_dir, fs::remove_dir_all, path::Path};
+    use ureq::Agent;
 
-    fn build_agent(cache_dir: &PathBuf) -> Agent {
-        let mut middleware = MiddlewareChain::default();
-        middleware.add(CacheMiddleware::new(&cache_dir.to_string_lossy()));
-
-        Agent::new_with_config(Config { middleware, ..Config::default() })
+    fn build_agent(cache_dir: &Path) -> Agent {
+        Agent::config_builder()
+            .middleware(CacheMiddleware::new(&cache_dir.to_string_lossy()))
+            .build()
+            .into()
     }
 
     #[test]
