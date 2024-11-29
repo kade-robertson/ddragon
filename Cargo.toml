@@ -15,17 +15,22 @@ categories = ["api-bindings"]
 cacache = { version = "11.7.1", optional = true, default-features = false, features = ["tokio-runtime", "mmap"] }
 http-cache-reqwest = { version = "0.11", optional = true }
 image = { version = "0.24", default-features = false, features = ["png"], optional = true }
+litemap = { version = ">=0.7,<=0.7.3", optional = true }
 reqwest = { version = "0.11", default-features = false, features = ["json"], optional = true }
 reqwest-middleware = { version = "0.2", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = { version = "1.0", optional = true }
 ureq = { version = "2.7", features = ["json"], optional = true }
 url = { version = "2.3", optional = true }
+yoke = { version = ">=0.7,<=0.7.4", optional = true }
+zerofrom = { version = ">=0.1,<=0.1.4", optional = true }
 
 [dev-dependencies]
 mockito = "=1.1.1"
 tokio = "=1.32.0"
+tokio-stream = "=0.1.15"
 tokio-test = "=0.4.3"
+tokio-util = "=0.7.11"
 colored = "=2.0.4"
 
 [features]
