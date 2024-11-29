@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.3](https://github.com/kade-robertson/ddragon/compare/v0.8.2...v0.8.3) (2024-11-29)
+
+
+### Bug Fixes
+
+* mark compatible with thiserror 1 or 2 ([#68](https://github.com/kade-robertson/ddragon/issues/68)) ([f351c58](https://github.com/kade-robertson/ddragon/commit/f351c5812f4e19877c5f8ae7011ead5a3587f8ee))
+* pin dependencies to work on 1.67.1 ([#66](https://github.com/kade-robertson/ddragon/issues/66)) ([65c8439](https://github.com/kade-robertson/ddragon/commit/65c843943d44693c4e92975f1ceb21ca08afabe5))
+
 ## [0.8.2](https://github.com/kade-robertson/ddragon/compare/v0.8.1...v0.8.2) (2024-04-05)
 
 
