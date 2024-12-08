@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/kade-robertson/ddragon/compare/v0.8.3...v0.8.4) (2024-12-08)
+
+
+### Bug Fixes
+
+* **deps:** commit lockfile to pin versions as per recommendation ([#69](https://github.com/kade-robertson/ddragon/issues/69)) ([cfaf05b](https://github.com/kade-robertson/ddragon/commit/cfaf05b64eb4bb9d61fccf91a20bebbaf62a4762))
+
 ## [0.8.3](https://github.com/kade-robertson/ddragon/compare/v0.8.2...v0.8.3) (2024-11-29)
 
 
