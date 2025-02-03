@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0](https://github.com/kade-robertson/ddragon/compare/v0.8.4...v0.9.0) (2025-02-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to ureq 3, msrv to 1.71, remove deprecated methods ([#65](https://github.com/kade-robertson/ddragon/issues/65))
+
+### Features
+
+* upgrade to ureq 3, msrv to 1.71, remove deprecated methods ([#65](https://github.com/kade-robertson/ddragon/issues/65)) ([2271873](https://github.com/kade-robertson/ddragon/commit/2271873fee5bddba6a0ab63942bb21687bceeb23))
+
 ## [0.8.4](https://github.com/kade-robertson/ddragon/compare/v0.8.3...v0.8.4) (2024-12-08)
 
 
