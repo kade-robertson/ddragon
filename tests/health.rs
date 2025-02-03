@@ -94,10 +94,10 @@ fn health_check() {
     assert_eq!(tft_traits, cached_tft_traits);
 }
 
-#[cfg(feature = "async")]
+#[cfg(feature = "async-base")]
 use ddragon::AsyncClient;
 
-#[cfg(feature = "async")]
+#[cfg(feature = "async-base")]
 #[tokio::test]
 async fn async_health_check() {
     let tempdir = temp_dir().join("ddragon-async-cache");

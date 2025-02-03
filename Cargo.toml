@@ -33,7 +33,7 @@ default = ["sync"]
 sync = ["dep:thiserror", "dep:url", "dep:ureq", "dep:cacache"]
 async-base = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
 async = ["async-base", "reqwest?/native-tls"]
-async-rustls = ["async-base", "reqwest?/rustls"]
+async-rustls = ["async-base", "reqwest?/rustls-tls"]
 image = ["dep:image"]
 
 [profile.dev]
