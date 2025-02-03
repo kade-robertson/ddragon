@@ -225,42 +225,6 @@ macro_rules! create_endpoint {
 }
 
 impl AsyncClient {
-    #[deprecated(
-        note = "Use `AsyncClientBuilder::new().agent_with_middleware(agent).build()` instead."
-    )]
-    /// Creates a new client using a provided agent, in case you may want to
-    /// customize the agent behaviour with additional middlewares (or anything
-    /// else you might want to do)
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let plain_agent = reqwest::Client::new();
-    /// let agent = reqwest_middleware::ClientBuilder::new(plain_agent).build();
-    /// let api = AsyncClient::with_agent(agent).await.unwrap();
-    /// # })
-    /// ```
-    pub async fn with_agent(agent: ClientWithMiddleware) -> Result<Self, ClientError> {
-        AsyncClientBuilder::new().agent_with_middleware(agent).build().await
-    }
-
-    #[deprecated(note = "Use `AsyncClientBuilder::new().agent(agent).build()` instead.")]
-    /// Creates a new client using a provided agent, in case you want to bypass
-    /// any caching mechanics.
-    ///
-    /// ```no_run
-    /// # tokio_test::block_on(async {
-    /// use ddragon::AsyncClient;
-    ///
-    /// let plain_agent = reqwest::Client::new();
-    /// let api = AsyncClient::with_plain_agent(plain_agent).await.unwrap();
-    /// # })
-    /// ```
-    pub async fn with_plain_agent(agent: Client) -> Result<Self, ClientError> {
-        AsyncClientBuilder::new().agent(agent).build().await
-    }
-
     /// Creates a new client with the specified directory as the caching location
     /// for any data the client downloads.
     ///

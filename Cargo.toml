@@ -1,7 +1,7 @@
 [package]
 name = "ddragon"
 version = "0.8.4"
-rust-version = "1.67.1"
+rust-version = "1.71.1"
 edition = "2021"
 license = "MIT"
 description = "Library for pulling data from ddragon, with caching support."
@@ -19,7 +19,7 @@ reqwest = { version = "0.11", default-features = false, features = ["json"], opt
 reqwest-middleware = { version = "0.2", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = { version = ">=1,<3", optional = true }
-ureq = { version = "2.7", features = ["json"], optional = true }
+ureq = { version = "3.0", features = ["json"], optional = true }
 url = { version = "2.3", optional = true }
 
 [dev-dependencies]

@@ -23,9 +23,10 @@ fn main() -> Result<(), ClientError> {
     let client = Client::new("/path/to/your/cache/dir")?;
 
     // If you want to use an existing agent
-    let my_agent = ureq::AgentBuilder::new()
+    let my_agent = ureq::Agent::config_builder()
         .middleware(CacheMiddleware::new("/path/to/your/cache/dir"))
-        .build();
+        .build()
+        .into();
     let client = ClientBuilder::new().agent(my_agent).build()?;
 
     // See available options on the client and in the models folder.
@@ -94,4 +95,4 @@ ddragon = { version = "<version>", default-features = false }
 
 ### MSRV
 
-Currently, this crate support Rust >= 1.67.1.
+Currently, this crate support Rust >= 1.71.1.
