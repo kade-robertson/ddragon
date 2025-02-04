@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/kade-robertson/ddragon/compare/v0.9.0...v0.9.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* correct feature specifier for rustls support ([#73](https://github.com/kade-robertson/ddragon/issues/73)) ([93085e9](https://github.com/kade-robertson/ddragon/commit/93085e9dd007f72646a6a7279e3de5b997f2f30e))
+
 ## [0.9.0](https://github.com/kade-robertson/ddragon/compare/v0.8.4...v0.9.0) (2025-02-03)
 
 
