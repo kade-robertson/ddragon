@@ -1,3 +1,5 @@
+#[cfg(feature = "cdragon")]
+pub mod cdragon;
 pub mod challenges;
 pub mod champion;
 pub mod champions;
@@ -13,6 +15,8 @@ pub mod summoner_spells;
 pub mod tft;
 pub mod translations;
 
+#[cfg(feature = "cdragon")]
+pub use cdragon::augments::Augment;
 pub use challenges::Challenges;
 pub use champion::Champion;
 pub use champions::Champions;

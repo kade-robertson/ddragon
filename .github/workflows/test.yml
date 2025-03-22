@@ -61,9 +61,9 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Build tests
-        run: cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --no-run --lib
+        run: cargo test --no-default-features --features "sync image cdragon ${{ matrix.async-feature }}" --target ${{ matrix.target }} --no-run --lib
 
       - name: Test
         run: |
-          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --lib
-          cargo test --no-default-features --features "sync image ${{ matrix.async-feature }}" --target ${{ matrix.target }} --doc
+          cargo test --no-default-features --features "sync image cdragon ${{ matrix.async-feature }}" --target ${{ matrix.target }} --lib
+          cargo test --no-default-features --features "sync image cdragon ${{ matrix.async-feature }}" --target ${{ matrix.target }} --doc

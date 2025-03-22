@@ -36,6 +36,8 @@ fn health_check() {
     let tft_regalia = client.tft_regalia().unwrap();
     let tft_tacticians = client.tft_tacticians().unwrap();
     let tft_traits = client.tft_traits().unwrap();
+    #[cfg(feature = "cdragon")]
+    let arena_augments = client.arena_augments().unwrap();
     let uncached_duration = uncached_start.elapsed();
 
     let cached_start = Instant::now();
@@ -62,6 +64,8 @@ fn health_check() {
     let cached_tft_regalia = client.tft_regalia().unwrap();
     let cached_tft_tacticians = client.tft_tacticians().unwrap();
     let cached_tft_traits = client.tft_traits().unwrap();
+    #[cfg(feature = "cdragon")]
+    let cached_arena_augments = client.arena_augments().unwrap();
     let cached_duration = cached_start.elapsed();
 
     println!();
@@ -92,6 +96,7 @@ fn health_check() {
     assert_eq!(tft_regalia, cached_tft_regalia);
     assert_eq!(tft_tacticians, cached_tft_tacticians);
     assert_eq!(tft_traits, cached_tft_traits);
+    assert_eq!(arena_augments, cached_arena_augments);
 }
 
 #[cfg(feature = "async-base")]
@@ -129,6 +134,8 @@ async fn async_health_check() {
     let tft_regalia = client.tft_regalia().await.unwrap();
     let tft_tacticians = client.tft_tacticians().await.unwrap();
     let tft_traits = client.tft_traits().await.unwrap();
+    #[cfg(feature = "cdragon")]
+    let arena_augments = client.arena_augments().await.unwrap();
     let uncached_duration = uncached_start.elapsed();
 
     let cached_start = Instant::now();
@@ -155,6 +162,8 @@ async fn async_health_check() {
     let cached_tft_regalia = client.tft_regalia().await.unwrap();
     let cached_tft_tacticians = client.tft_tacticians().await.unwrap();
     let cached_tft_traits = client.tft_traits().await.unwrap();
+    #[cfg(feature = "cdragon")]
+    let cached_arena_augments = client.arena_augments().await.unwrap();
     let cached_duration = cached_start.elapsed();
 
     println!();
@@ -185,4 +194,5 @@ async fn async_health_check() {
     assert_eq!(tft_regalia, cached_tft_regalia);
     assert_eq!(tft_tacticians, cached_tft_tacticians);
     assert_eq!(tft_traits, cached_tft_traits);
+    assert_eq!(arena_augments, cached_arena_augments);
 }

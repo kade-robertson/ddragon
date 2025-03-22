@@ -35,6 +35,8 @@ pub struct ClientBuilder {
     agent: Option<Agent>,
     cache: Option<String>,
     version: Option<String>,
+    #[cfg(feature = "cdragon")]
+    cdragon_server: String,
 }
 
 ///
@@ -77,6 +79,8 @@ impl ClientBuilder {
             agent: None,
             cache: None,
             version: None,
+            #[cfg(feature = "cdragon")]
+            cdragon_server: "https://raw.communitydragon.org".to_owned(),
         }
     }
 
@@ -140,7 +144,21 @@ impl ClientBuilder {
             version_list.first().ok_or(ClientError::NoLatestVersion)?.to_owned()
         };
 
-        Ok(Client { agent, version: latest_version, base_url })
+        Ok(Client {
+            agent,
+            #[cfg(feature = "cdragon")]
+            cdragon_version: latest_version
+                .clone()
+                .split('.')
+                .take(2)
+                .map(|p| p.to_owned())
+                .collect::<Vec<String>>()
+                .join("."),
+            version: latest_version,
+            base_url,
+            #[cfg(feature = "cdragon")]
+            cdragon_base_url: Url::parse(&self.cdragon_server)?,
+        })
     }
 }
 
@@ -157,6 +175,11 @@ pub struct Client {
     /// The current version of the API data reported back to us from the API.
     pub version: String,
     base_url: Url,
+
+    #[cfg(feature = "cdragon")]
+    cdragon_base_url: Url,
+    #[cfg(feature = "cdragon")]
+    cdragon_version: String,
 }
 
 macro_rules! create_endpoint {
@@ -170,7 +193,7 @@ macro_rules! create_endpoint {
         #[doc = concat!(" let ", stringify!($name), " = api.", stringify!($name), "().unwrap();")]
         #[doc = " ```"]
         pub fn $name(&self) -> Result<$ret, ClientError> {
-            self.get_data::<$ret>(concat!("./", $path, ".json"))
+            self.get_data_ddragon::<$ret>(concat!("./", $path, ".json"))
         }
     };
 }
@@ -192,10 +215,12 @@ impl Client {
         self.base_url.join(&format!("/cdn/{}/data/en_US/", &self.version))
     }
 
-    fn get_data<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, ClientError> {
-        let joined_url = self.get_data_url()?.join(endpoint)?;
-        let request_url = joined_url.as_str();
+    #[cfg(feature = "cdragon")]
+    fn get_cdragon_data_url(&self) -> Result<Url, url::ParseError> {
+        self.cdragon_base_url.join(&format!("/{}/cdragon/", &self.cdragon_version))
+    }
 
+    fn get_data<T: DeserializeOwned>(&self, request_url: &str) -> Result<T, ClientError> {
         self.agent
             .get(request_url)
             .call()
@@ -203,6 +228,19 @@ impl Client {
             .into_body()
             .read_json::<T>()
             .map_err(|e| Box::new(e).into())
+    }
+
+    fn get_data_ddragon<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, ClientError> {
+        let joined_url = self.get_data_url()?.join(endpoint)?;
+        let request_url = joined_url.as_str();
+        self.get_data(request_url)
+    }
+
+    #[cfg(feature = "cdragon")]
+    fn get_data_cdragon<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T, ClientError> {
+        let joined_url = self.get_cdragon_data_url()?.join(endpoint)?;
+        let request_url = joined_url.as_str();
+        self.get_data(request_url)
     }
 
     create_endpoint!(challenges, "challenge", "challenges", Challenges);
@@ -238,7 +276,7 @@ impl Client {
     /// let wukong = api.champion("MonkeyKing").unwrap();
     /// ```
     pub fn champion(&self, key: &str) -> Result<Champion, ClientError> {
-        self.get_data::<ChampionWrapper>(&format!("./champion/{key}.json"))?
+        self.get_data_ddragon::<ChampionWrapper>(&format!("./champion/{key}.json"))?
             .data
             .get(key)
             .cloned()
@@ -311,6 +349,23 @@ impl Client {
             item.sprite_path()
         ))?)
     }
+
+    /// [cdragon] Returns augment data for the Arena game mode.
+    ///
+    /// ```no_run
+    /// use ddragon::Client;
+    ///
+    /// let api = Client::new("./cache").unwrap();
+    /// let arena_augments = api.arena_augments().unwrap();
+    /// ```
+    #[cfg(feature = "cdragon")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "cdragon")))]
+    pub fn arena_augments(&self) -> Result<Vec<crate::models::Augment>, ClientError> {
+        self.get_data_cdragon::<crate::models::cdragon::augments::AugmentsResponse>(
+            "./arena/en_us.json",
+        )
+        .map(|r| r.augments)
+    }
 }
 
 #[cfg(test)]
@@ -321,13 +376,18 @@ mod test {
     fn create_mock_client() -> (ServerGuard, String, Client) {
         let server = Server::new();
         let url = server.url();
+        let parsed = Url::parse(&url).unwrap();
         (
             server,
             url.clone(),
             Client {
                 agent: Agent::new_with_defaults(),
                 version: "0.0.0".to_owned(),
-                base_url: Url::parse(&url).unwrap(),
+                #[cfg(feature = "cdragon")]
+                cdragon_base_url: parsed.clone(),
+                #[cfg(feature = "cdragon")]
+                cdragon_version: "0.0".to_owned(),
+                base_url: parsed,
             },
         )
     }
@@ -456,7 +516,7 @@ mod test {
                 .create();
 
             assert_eq!(
-                client.get_data::<Vec<String>>("./data.json").unwrap(),
+                client.get_data_ddragon::<Vec<String>>("./data.json").unwrap(),
                 vec!["value".to_owned()]
             );
         }
