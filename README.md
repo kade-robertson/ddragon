@@ -13,6 +13,7 @@ Rust library for accessing the latest League of Legends patch's ddragon data.
   - Local caching is handled by `http-cache-reqwest` rather than a custom middleware
   - Also accepts custom `reqwest` or `reqwest-middleware` clients
 - Optionally, some useful functions to fetch and decode images, via `image`
+- Optionally, minimal support of cdragon data
 
 ## Usage
 
@@ -55,6 +56,10 @@ The following crate features are available:
 
   - Both clients will receive `image_of` and `sprite_of` for any model which implements `HasImage`.
   - Adds the `image` dependency.
+
+- `cdragon` enables support for sourcing data from CommunityDragon.
+
+  - At the moment, this just adds a method for fetching Arena mode augments.
 
 - To use the library with just the synchronous version, it should be as simple as adding any other dependency:
 
