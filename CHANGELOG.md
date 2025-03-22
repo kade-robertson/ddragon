@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/kade-robertson/ddragon/compare/v0.9.1...v0.9.2) (2025-03-22)
+
+
+### Features
+
+* initial cdragon support ([#76](https://github.com/kade-robertson/ddragon/issues/76)) ([fed34ab](https://github.com/kade-robertson/ddragon/commit/fed34ab65ab6f040d123776a6674b872d0b1b8b8))
+
 ## [0.9.1](https://github.com/kade-robertson/ddragon/compare/v0.9.0...v0.9.1) (2025-02-03)
 
 
