@@ -13,7 +13,7 @@
     },    
     {
       "matchPackageNames": ["google-github-actions/release-please-action"],
-      "allowedVersion": "<4"
+      "allowedVersions": "<4"
     }
   ]
 }
