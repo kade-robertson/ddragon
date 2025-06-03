@@ -56,7 +56,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.3
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
       - name: Health Check
         run: cargo test --no-default-features --features "sync image cdragon ${{ matrix.async-feature }}" --target ${{ matrix.target }} --release -- --test health --nocapture

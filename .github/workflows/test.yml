@@ -55,7 +55,7 @@ jobs:
           components: rustfmt
 
       - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.3
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
       - name: Check formatting
         run: cargo fmt --all -- --check
