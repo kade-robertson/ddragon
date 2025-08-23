@@ -104,6 +104,7 @@ impl ClientBuilder {
     }
 
     #[cfg(test)]
+    #[allow(missing_docs)]
     pub fn server(mut self, server: &str) -> Self {
         self.server = server.to_owned();
         self
@@ -482,7 +483,7 @@ mod test {
             let (_server, url, client) = create_mock_client();
             assert_eq!(
                 client.get_data_url().unwrap().as_str(),
-                format!("{}/cdn/0.0.0/data/en_US/", url)
+                format!("{url}/cdn/0.0.0/data/en_US/")
             );
         }
 
