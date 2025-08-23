@@ -145,7 +145,7 @@ impl AsyncClientBuilder {
     /// # Notes
     ///
     /// - If a custom [Client] is specified, not specifying a cache directory will
-    /// result in no content being cached.
+    ///   result in no content being cached.
     pub async fn build(self) -> Result<AsyncClient, ClientError> {
         let agent = match self.agent {
             Some(a) => a,
@@ -174,7 +174,7 @@ impl AsyncClientBuilder {
                 }
             };
 
-            version_list.get(0).ok_or(ClientError::NoLatestVersion)?.to_owned()
+            version_list.first().ok_or(ClientError::NoLatestVersion)?.to_owned()
         };
 
         let middleware_agent = match agent {
@@ -541,7 +541,7 @@ mod test {
             let (_server, url, client) = create_mock_client().await;
             assert_eq!(
                 client.get_data_url().unwrap().as_str(),
-                format!("{}/cdn/0.0.0/data/en_US/", url)
+                format!("{url}/cdn/0.0.0/data/en_US/")
             );
         }
 

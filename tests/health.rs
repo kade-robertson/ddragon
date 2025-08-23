@@ -2,15 +2,25 @@
 use std::{env::temp_dir, fs::remove_dir_all, time::Instant};
 
 #[cfg(feature = "sync")]
-use ddragon::Client;
-
-#[cfg(feature = "sync")]
 #[test]
 fn health_check() {
+    use ddragon::{cache_middleware::CacheMiddleware, ClientBuilder};
+    use std::time::Duration;
+    use ureq::{config::Config, Agent};
+
     let tempdir = temp_dir().join("ddragon-cache");
     let _ = remove_dir_all(&tempdir);
 
-    let client = Client::new(tempdir.as_os_str().to_str().unwrap()).unwrap();
+    let cache_dir = tempdir.as_os_str().to_str().unwrap();
+    let client = ClientBuilder::new()
+        .agent(Agent::new_with_config(
+            Config::builder()
+                .timeout_global(Some(Duration::from_secs(10)))
+                .middleware(CacheMiddleware::new(cache_dir))
+                .build(),
+        ))
+        .build()
+        .unwrap();
 
     let uncached_start = Instant::now();
     let challenges = client.challenges().unwrap();
@@ -100,15 +110,34 @@ fn health_check() {
 }
 
 #[cfg(feature = "async-base")]
-use ddragon::AsyncClient;
-
-#[cfg(feature = "async-base")]
 #[tokio::test]
 async fn async_health_check() {
+    use std::time::Duration;
+
+    use ddragon::AsyncClientBuilder;
+    use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache, HttpCacheOptions};
+    use reqwest::Client;
+    use reqwest_middleware::ClientBuilder as MiddlewareClientBuilder;
+
     let tempdir = temp_dir().join("ddragon-async-cache");
     let _ = remove_dir_all(&tempdir);
 
-    let client = AsyncClient::new(tempdir.as_os_str().to_str().unwrap()).await.unwrap();
+    let cache_dir = tempdir.as_os_str().to_str().unwrap();
+    let client = AsyncClientBuilder::new()
+        .agent_with_middleware(
+            MiddlewareClientBuilder::new(
+                Client::builder().timeout(Duration::from_secs(10)).build().unwrap(),
+            )
+            .with(Cache(HttpCache {
+                mode: CacheMode::ForceCache,
+                manager: CACacheManager { path: cache_dir.into() },
+                options: HttpCacheOptions::default(),
+            }))
+            .build(),
+        )
+        .build()
+        .await
+        .unwrap();
 
     let uncached_start = Instant::now();
     let challenges = client.challenges().await.unwrap();
