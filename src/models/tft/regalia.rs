@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::models::shared::{has_image, Image};
+use crate::models::shared::{Image, has_image};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Regalia {

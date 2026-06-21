@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use super::{
     champion::{Info, Tag},
-    shared::{has_image, Image},
+    shared::{Image, has_image},
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

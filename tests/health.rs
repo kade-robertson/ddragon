@@ -4,9 +4,9 @@ use std::{env::temp_dir, fs::remove_dir_all, time::Instant};
 #[cfg(feature = "sync")]
 #[test]
 fn health_check() {
-    use ddragon::{cache_middleware::CacheMiddleware, ClientBuilder};
+    use ddragon::{ClientBuilder, cache_middleware::CacheMiddleware};
     use std::time::Duration;
-    use ureq::{config::Config, Agent};
+    use ureq::{Agent, config::Config};
 
     let tempdir = temp_dir().join("ddragon-cache");
     let _ = remove_dir_all(&tempdir);

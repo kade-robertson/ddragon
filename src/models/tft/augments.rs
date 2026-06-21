@@ -1,7 +1,7 @@
-use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de::Visitor};
 use std::collections::HashMap;
 
-use crate::models::shared::{has_image, BasicDatum, Image};
+use crate::models::shared::{BasicDatum, Image, has_image};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Augments {

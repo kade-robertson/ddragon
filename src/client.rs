@@ -5,7 +5,7 @@
 use mockito;
 
 #[cfg(feature = "image")]
-use image::{load_from_memory, DynamicImage};
+use image::{DynamicImage, load_from_memory};
 
 #[cfg(feature = "image")]
 use std::io::Read;
@@ -22,11 +22,11 @@ use crate::models::tft::{
     self, Arenas, Augments, HeroAugments, Queues, Regalia, Tacticians, Traits,
 };
 use crate::{
-    models::{
-        champion::ChampionWrapper, Challenges, Champion, Champions, ChampionsFull, Items, Maps,
-        MissionAssets, ProfileIcons, Runes, SpellBuffs, SummonerSpells, Translations,
-    },
     ClientError,
+    models::{
+        Challenges, Champion, Champions, ChampionsFull, Items, Maps, MissionAssets, ProfileIcons,
+        Runes, SpellBuffs, SummonerSpells, Translations, champion::ChampionWrapper,
+    },
 };
 
 /// Used for building a [Client] with custom options.
