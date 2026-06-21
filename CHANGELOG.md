@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.10.0](https://github.com/kade-robertson/ddragon/compare/v0.9.2...v0.10.0) (2026-06-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* **msrv:** bump rust-version to 1.85.1, edition to 2024 ([#110](https://github.com/kade-robertson/ddragon/issues/110))
+* **cdragon:** support new augment rarity and data value structure ([#108](https://github.com/kade-robertson/ddragon/issues/108))
+
+### Bug Fixes
+
+* **cdragon:** support new augment rarity and data value structure ([#108](https://github.com/kade-robertson/ddragon/issues/108)) ([687af20](https://github.com/kade-robertson/ddragon/commit/687af208f0184fca474741a553b0cd4aa5b61916))
+* **msrv:** bump rust-version to 1.85.1, edition to 2024 ([#110](https://github.com/kade-robertson/ddragon/issues/110)) ([b2d4250](https://github.com/kade-robertson/ddragon/commit/b2d42501687821a619955fa6736dd359276550cd))
+
 ## [0.9.2](https://github.com/kade-robertson/ddragon/compare/v0.9.1...v0.9.2) (2025-03-22)
 
 
