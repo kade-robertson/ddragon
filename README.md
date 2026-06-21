@@ -100,4 +100,4 @@ ddragon = { version = "<version>", default-features = false }
 
 ### MSRV
 
-Currently, this crate support Rust >= 1.71.1.
+Currently, this crate support Rust >= 1.85.1.

@@ -1,8 +1,8 @@
 [package]
 name = "ddragon"
 version = "0.9.2"
-rust-version = "1.71.1"
-edition = "2021"
+rust-version = "1.85.1"
+edition = "2024"
 license = "MIT"
 description = "Library for pulling data from ddragon, with caching support."
 homepage = "https://github.com/kade-robertson/ddragon"
@@ -12,7 +12,7 @@ keywords = ["ddragon", "league-of-legends", "lol", "teamfight-tactics", "tft"]
 categories = ["api-bindings"]
 
 [dependencies]
-cacache = { version = "11.7.1", optional = true, default-features = false, features = ["tokio-runtime", "mmap"] }
+cacache = { version = "11.7.1", optional = true, default-features = false, features = ["mmap"] }
 http-cache-reqwest = { version = "0.11", optional = true }
 image = { version = "0.24", default-features = false, features = ["png"], optional = true }
 reqwest = { version = "0.11", default-features = false, features = ["json"], optional = true }
@@ -33,7 +33,7 @@ colored = "=2.0.4"
 default = ["sync"]
 cdragon = ["dep:serde_repr"]
 sync = ["dep:thiserror", "dep:url", "dep:ureq", "dep:cacache"]
-async-base = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
+async-base = ["dep:thiserror", "dep:url", "dep:reqwest", "dep:reqwest-middleware", "dep:http-cache-reqwest", "cacache?/tokio-runtime"]
 async = ["async-base", "reqwest?/native-tls"]
 async-rustls = ["async-base", "reqwest?/rustls-tls"]
 image = ["dep:image"]

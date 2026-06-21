@@ -2,7 +2,7 @@
 #![warn(missing_docs)]
 
 #[cfg(feature = "image")]
-use image::{load_from_memory, DynamicImage};
+use image::{DynamicImage, load_from_memory};
 
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache, HttpCacheOptions};
 use reqwest::Client;
@@ -17,13 +17,13 @@ use mockito;
 use crate::models::shared::HasImage;
 
 use crate::{
+    ClientError,
     models::{
-        champion::ChampionWrapper,
-        tft::{self, Arenas, Augments, HeroAugments, Queues, Regalia, Tacticians, Traits},
         Challenges, Champion, Champions, ChampionsFull, Items, Maps, MissionAssets, ProfileIcons,
         Runes, SpellBuffs, SummonerSpells, Translations,
+        champion::ChampionWrapper,
+        tft::{self, Arenas, Augments, HeroAugments, Queues, Regalia, Tacticians, Traits},
     },
-    ClientError,
 };
 
 #[derive(Clone)]
@@ -480,11 +480,13 @@ mod test {
 
         #[tokio::test]
         async fn result_err_server_unavailable() {
-            assert!(AsyncClientBuilder::new()
-                .server("https://dead-server.notadomain")
-                .build()
-                .await
-                .is_err());
+            assert!(
+                AsyncClientBuilder::new()
+                    .server("https://dead-server.notadomain")
+                    .build()
+                    .await
+                    .is_err()
+            );
         }
 
         #[tokio::test]
